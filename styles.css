@@ -294,9 +294,10 @@ img {
 }
 
 .mode-tabs {
+  width: 100%;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
   padding: 4px;
   border-radius: var(--radius-lg);
   background-color: var(--bg-raised);
@@ -308,14 +309,16 @@ img {
   border-radius: var(--radius-md);
   background-color: transparent;
   color: var(--text-secondary);
-  padding: 8px 12px;
+  min-height: 52px;
+  padding: 8px 6px;
   text-align: center;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .tab-title {
-  font-size: 15px;
+  font-size: clamp(13px, 2.5vw, 15px);
   font-weight: 600;
 }
 
@@ -691,7 +694,8 @@ img {
   line-height: 1.25;
 }
 
-#quiz-play-btn {
+#quiz-play-btn,
+#games-play-btn {
   min-width: 184px;
 }
 
@@ -850,14 +854,570 @@ img {
   margin: 0;
 }
 
+/* Puzzle & Games Panel */
+.puzzle-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.games-settings {
+  margin-bottom: 16px;
+}
+
+.puzzle-pill-group {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.puzzle-pill-group .choice-pill {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 6px;
+  font-size: clamp(12px, 2.8vw, 14px);
+  line-height: 1.2;
+  text-align: center;
+}
+
+.level-pill {
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pill-title {
+  font-size: clamp(13px, 2.8vw, 14px);
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.pill-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.15;
+}
+
+.level-pill[aria-pressed="true"] .pill-sub {
+  color: var(--bg-raised);
+}
+
+.puzzle-clue-text {
+  margin: 4px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.puzzle-status-note {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 12px;
+}
+
+/* Jigsaw */
+.jigsaw-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  gap: 16px;
+}
+
+.jigsaw-board,
+.jigsaw-tray {
+  width: 100%;
+  display: grid;
+  gap: 6px;
+}
+
+.jigsaw-board {
+  position: relative;
+  max-width: 240px;
+  padding: 8px;
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-raised);
+  border: 1px solid var(--border-hairline);
+}
+
+.jigsaw-board.is-complete {
+  gap: 0;
+  padding: 0;
+  border: 2px solid var(--success-ink);
+  background-color: #FAF3E3;
+  overflow: hidden;
+}
+
+.jigsaw-board-ghost {
+  position: absolute;
+  inset: 8px;
+  width: calc(100% - 16px);
+  height: calc(100% - 16px);
+  object-fit: cover;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.jigsaw-board.is-complete .jigsaw-board-ghost {
+  display: none;
+}
+
+.jigsaw-slot {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  border: 2px dashed #6B6052;
+  background-color: rgba(255, 253, 248, 0.58);
+  color: var(--text-primary);
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 150ms var(--ease), background-color 150ms var(--ease);
+}
+
+.jigsaw-slot.is-ready {
+  border-color: var(--accent);
+  background-color: rgba(250, 234, 227, 0.58);
+}
+
+.jigsaw-slot.is-selected {
+  border-style: solid;
+  border-color: var(--accent);
+  background-color: var(--accent-soft);
+}
+
+.jigsaw-slot.is-filled {
+  border: 1px solid rgba(36, 30, 24, 0.14);
+  background-color: #FAF3E3;
+  cursor: default;
+}
+
+.jigsaw-board.is-complete .jigsaw-slot {
+  border: 0;
+  border-radius: 0;
+}
+
+.jigsaw-slot-num {
+  padding: 2px 8px;
+  border-radius: 8px;
+  background-color: rgba(255, 253, 248, 0.88);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.jigsaw-tray {
+  max-width: 210px;
+}
+
+.jigsaw-piece {
+  position: relative;
+  width: 100%;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border-hairline);
+  border-bottom: 4px solid var(--border-lip);
+  background-color: #FAF3E3;
+  overflow: hidden;
+  transition: transform 140ms var(--ease), border-color 150ms var(--ease), box-shadow 150ms var(--ease);
+}
+
+.jigsaw-piece:hover:not(:disabled) {
+  border-color: var(--text-secondary);
+}
+
+.jigsaw-piece.is-selected {
+  border-color: var(--accent);
+  border-bottom-color: var(--accent-lip);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(36, 30, 24, 0.14);
+}
+
+.jigsaw-piece.is-placed {
+  border: 2px dashed rgba(36, 30, 24, 0.16);
+  background-color: rgba(239, 231, 216, 0.45);
+  box-shadow: none;
+}
+
+.jigsaw-crop {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #FAF3E3;
+}
+
+.jigsaw-crop img {
+  position: absolute;
+  max-width: none;
+  max-height: none;
+  display: block;
+  mix-blend-mode: multiply;
+}
+
+/* Shadow Match */
+.shadow-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.shadow-target-box {
+  width: 100%;
+  max-width: 210px;
+  aspect-ratio: 1 / 1;
+  padding: 14px;
+  border-radius: var(--radius-xl);
+  background-color: #FAF3E3;
+  border: 2px solid var(--border-hairline);
+  border-bottom: 5px solid var(--border-lip);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.shadow-target-box.is-revealed {
+  background-color: var(--success-bg);
+  border-color: var(--success-ink);
+  border-bottom-color: var(--success-ink);
+}
+
+.shadow-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.shadow-img-fallback {
+  filter: grayscale(100%) contrast(160%) brightness(0.85);
+  mix-blend-mode: multiply;
+}
+
+.shadow-revealed-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: multiply;
+}
+
+.shadow-layout .quiz-choices {
+  width: 100%;
+}
+
+/* Arrange Letters */
+.letters-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.letters-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.letters-picture-card {
+  width: 100%;
+  max-width: 176px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-lg);
+  background-color: #FAF3E3;
+  border: 1px solid var(--border-hairline);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.letters-picture-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: multiply;
+}
+
+.letters-guide {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--text-secondary);
+}
+
+.letters-slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.letter-slot {
+  width: 48px;
+  height: 54px;
+  border-radius: var(--radius-md);
+  border: 2px dashed #6B6052;
+  background-color: var(--bg-raised);
+  color: var(--text-primary);
+  font-size: 24px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.letter-slot.is-active {
+  border-style: solid;
+  border-color: var(--accent);
+  background-color: var(--accent-soft);
+}
+
+.letter-slot.is-filled {
+  border-style: solid;
+  border-color: var(--border-hairline);
+  border-bottom: 4px solid var(--border-lip);
+  background-color: var(--bg-card);
+}
+
+.letter-slot.is-complete {
+  border-color: var(--success-ink);
+  border-bottom-color: var(--success-ink);
+  background-color: var(--success-bg);
+  color: var(--success-ink);
+}
+
+.letter-slot-ghost {
+  color: var(--text-muted);
+}
+
+.letters-tray {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.letter-tile {
+  min-width: 52px;
+  min-height: 52px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-hairline);
+  border-bottom: 4px solid var(--border-lip);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 22px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 140ms var(--ease), background-color 150ms var(--ease), opacity 150ms var(--ease);
+}
+
+.letter-tile:hover:not(:disabled) {
+  background-color: var(--bg-raised);
+}
+
+.letter-tile:active:not(:disabled) {
+  transform: translateY(2px);
+}
+
+.letter-tile.is-used {
+  opacity: 0.3;
+  background-color: var(--bg-raised);
+}
+
+/* Games Panel (Memory, Counting, Odd One Out) */
+.memory-layout,
+.counting-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.memory-card {
+  position: relative;
+  width: 100%;
+  min-height: 124px;
+  padding: 10px;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--border-hairline);
+  border-bottom: 5px solid var(--border-lip);
+  background-color: var(--bg-raised);
+  color: var(--text-primary);
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: transform 140ms var(--ease), border-color 160ms var(--ease), background-color 160ms var(--ease);
+}
+
+.memory-card:hover:not(:disabled) {
+  border-color: var(--text-secondary);
+}
+
+.memory-card:active:not(:disabled) {
+  transform: translateY(2px) scale(0.985);
+}
+
+.memory-card.is-open {
+  background-color: var(--bg-page);
+  border-color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.memory-card.is-matched {
+  background-color: var(--success-bg);
+  border-color: var(--success-ink);
+  border-bottom-color: var(--success-ink);
+}
+
+.memory-card-back {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-hairline);
+  color: var(--text-secondary);
+  font-size: 20px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.memory-card .card-art {
+  max-width: 120px;
+}
+
+.memory-card-word {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.counting-items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-raised);
+  border: 1px solid var(--border-hairline);
+}
+
+.counting-items.count-1 {
+  grid-template-columns: minmax(0, 180px);
+  justify-content: center;
+}
+
+.count-item-btn {
+  position: relative;
+  width: 100%;
+  min-height: 88px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-hairline);
+  border-bottom: 4px solid var(--border-lip);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 140ms var(--ease), border-color 160ms var(--ease), background-color 160ms var(--ease);
+}
+
+.count-item-btn .card-art {
+  max-width: 108px;
+}
+
+.count-item-btn:hover {
+  border-color: var(--text-secondary);
+}
+
+.count-item-btn:active {
+  transform: translateY(2px);
+}
+
+.count-item-btn.is-counted {
+  border-color: var(--accent);
+  border-bottom-color: var(--accent);
+  background-color: var(--accent-soft);
+}
+
+.count-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background-color: var(--accent);
+  color: var(--bg-card);
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.counting-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.count-choice-card .card-art {
+  max-width: 120px;
+}
+
+.count-choice-word {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
 /* Ultra-narrow phones (< 340px) */
 @media (max-width: 340px) {
   .word-grid,
-  .quiz-choices {
+  .quiz-choices,
+  .counting-choices {
     grid-template-columns: 1fr;
   }
 
   .spotlight-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 300px) {
+  .mode-tabs {
     grid-template-columns: 1fr;
   }
 }
@@ -868,15 +1428,8 @@ img {
     padding-inline: 24px;
   }
 
-  .intro-bar {
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-between;
-  }
-
   .mode-tabs {
-    width: auto;
-    min-width: 340px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .word-grid {
@@ -890,16 +1443,87 @@ img {
     justify-content: space-between;
   }
 
-  .quiz-choices.count-3 {
+  .quiz-choices.count-3,
+  .counting-choices.count-3,
+  .memory-grid.pairs-3,
+  .counting-items.count-3,
+  .counting-items.count-5,
+  .counting-items.count-6 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .quiz-choices {
+  .memory-grid.pairs-4,
+  .counting-items.count-4,
+  .counting-items.count-7,
+  .counting-items.count-8 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .quiz-choices,
+  .counting-choices {
     gap: 16px;
+  }
+
+  .jigsaw-layout {
+    grid-template-columns: minmax(0, 280px) minmax(0, 260px);
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+  }
+
+  .jigsaw-board {
+    max-width: 280px;
+  }
+
+  .jigsaw-tray {
+    max-width: 260px;
+  }
+
+  .shadow-target-box {
+    max-width: 248px;
+  }
+
+  .letters-picture-card {
+    max-width: 204px;
+  }
+
+  .letter-slot {
+    width: 56px;
+    height: 62px;
+    font-size: 26px;
   }
 }
 
-/* Desktop breakpoint (>= 960px) */
+/* 4-choice grid & side-by-side puzzle settings (>= 820px) */
+@media (min-width: 820px) {
+  .puzzle-settings {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .games-settings .puzzle-pill-group {
+    max-width: 440px;
+  }
+
+  .quiz-choices.count-4,
+  .counting-choices.count-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Desktop breakpoint (>= 900px) */
+@media (min-width: 900px) {
+  .mode-tab {
+    padding: 10px 14px;
+  }
+
+  .tab-title {
+    white-space: nowrap;
+  }
+}
+
 @media (min-width: 960px) {
   .main-wrap {
     padding-top: 28px;

@@ -15,5 +15,5 @@ Reading this as: Toddler English picture-word web app for children aged 1 to 5 a
 - **Warm Paper Ramp (`#FAF6EC` page, `#FFFDF8` card, `#EFE7D8` raised)**: Chosen to remove blinding white glare for young eyes and blend seamlessly with the gouache paper illustrations.
 - **Terracotta Clay Accent (`#C2451C`)**: Used only for the active learning mode, selected topic chip, and primary listen/next actions so young learners immediately see the one main button.
 - **Nunito Typography (weights 400, 500, 600)**: Self-hosted local `.woff2` chosen for open single-story `a` and rounded letterforms matching early-reading picture books, avoiding system-default inconsistency and external render-blocking requests.
-- **Two Age-Paced Modes**: `Sentuh & Dengar` (ages 1 to 2, including a distraction-free single-card view) and `Tebak Gambar` (ages 3 to 5, visual 2-picture or 3-picture choice with gentle retry instead of punishing error screens).
+- **Six Age-Paced Modes**: Arranged in a `3x2` grid directly below the title (`Main & belajar bahasa Inggris`): `Sentuh & Dengar` (1-2 yrs), `Tebak Gambar` (3-5 yrs), `Puzzle` (1-5 yrs: `Potongan Gambar`, `Cocokkan Bayangan`, `Susun Huruf`), `Kartu Memori` (2-5 yrs), `Hitung Gambar` (1-5 yrs), and `Cari yang Berbeda` (2-5 yrs).
 

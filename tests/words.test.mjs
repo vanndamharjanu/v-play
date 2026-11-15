@@ -86,8 +86,8 @@ test('getPromptText and getPraiseText format category-specific speech clearly', 
   assert.equal(getPromptText(numberTen), 'Where is the number ten?');
   assert.equal(getPromptText(shapeStar), 'Where is the star?');
 
-  assert.equal(getPraiseText(letterA), 'Yay! Letter A!');
-  assert.equal(getPraiseText(shapeStar), 'Yay! Star!');
+  assert.equal(getPraiseText(letterA), 'Great! Letter A!');
+  assert.equal(getPraiseText(shapeStar), 'Great! Star!');
 });
 
 test('buildQuizRound limits round size to pool length and contains valid questions', () => {

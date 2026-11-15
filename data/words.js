@@ -167,7 +167,7 @@ export function getPromptText(item) {
 }
 
 export function getPraiseText(item) {
-  return item.category === 'alphabets' ? `Yay! Letter ${item.word}!` : `Yay! ${item.word}!`;
+  return item.category === 'alphabets' ? `Great! Letter ${item.word}!` : `Great! ${item.word}!`;
 }
 
 export function filterWords(categoryId, list = WORDS) {
@@ -189,7 +189,7 @@ export function shuffle(items, rng = Math.random) {
  * Uses category pool first and fills from `allWords` only if pool is too small.
  */
 export function pickQuestionChoices(target, pool, choiceCount = 2, allWords = WORDS, rng = Math.random) {
-  const count = Math.max(2, Math.min(3, choiceCount));
+  const count = Math.max(2, Math.min(4, choiceCount));
   const samePoolDistractors = shuffle(
     pool.filter((w) => w.id !== target.id && w.word !== target.word),
     rng

@@ -1,8 +1,10 @@
 import { CATEGORIES, WORDS, filterWords, buildQuizRound, getPromptText, getPraiseText } from './data/words.js';
 import { AudioController } from './audio.js';
+import { createPuzzleController } from './puzzle.js';
+import { createGamesController } from './games.js';
 
 const state = {
-  mode: 'explore', // 'explore' | 'quiz'
+  mode: 'explore', // 'explore' | 'quiz' | 'puzzle' | 'memory' | 'counting' | 'odd'
   category: 'all',
   spotlightMode: false,
   spotlightIndex: 0,
@@ -21,8 +23,14 @@ const els = {
   soundToggleLabel: document.getElementById('sound-toggle-label'),
   tabExplore: document.getElementById('tab-explore'),
   tabQuiz: document.getElementById('tab-quiz'),
+  tabPuzzle: document.getElementById('tab-puzzle'),
+  tabMemory: document.getElementById('tab-memory'),
+  tabCounting: document.getElementById('tab-counting'),
+  tabOdd: document.getElementById('tab-odd'),
   panelExplore: document.getElementById('panel-explore'),
   panelQuiz: document.getElementById('panel-quiz'),
+  panelPuzzle: document.getElementById('panel-puzzle'),
+  panelGames: document.getElementById('panel-games'),
   modeHint: document.getElementById('mode-hint'),
   audioBanner: document.getElementById('audio-banner'),
   audioBannerText: document.getElementById('audio-banner-text'),
@@ -63,6 +71,8 @@ const els = {
 };
 
 let lastAudioAction = null;
+let puzzle = null;
+let games = null;
 
 function announce(message) {
   els.srAnnouncer.textContent = '';
@@ -74,6 +84,8 @@ function announce(message) {
 const audio = new AudioController({
   onStateChange: ({ status, message }) => {
     const spotlightLabel = els.spotlightPlay.querySelector('span');
+    if (puzzle) puzzle.updateAudioStatus(status);
+    if (games) games.updateAudioStatus(status);
     if (status === 'idle') {
       state.playingWordId = null;
       els.audioBanner.hidden = true;
@@ -151,11 +163,7 @@ function renderCategories() {
       state.category = cat.id;
       state.spotlightIndex = 0;
       renderCategories();
-      if (state.mode === 'explore') {
-        renderExplore();
-      } else {
-        startQuizRound({ autoPlay: true });
-      }
+      renderActiveMode({ autoPlay: true });
     });
     els.categoryList.appendChild(btn);
   }
@@ -303,8 +311,9 @@ function handleQuizChoice(picked, target) {
   if (picked.id === target.id) {
     state.quizSolved = true;
     const praise = getPraiseText(target);
-    lastAudioAction = () => audio.playVoice(target.audioPraise, praise, { chime: 'success' });
-    audio.playVoice(target.audioPraise, praise, { chime: 'success' });
+    // shortcut: play warm word clip until praise MP3s are regenerated without "Yay"
+    lastAudioAction = () => audio.playVoice(target.audioWord, praise, { chime: 'success' });
+    audio.playVoice(target.audioWord, praise, { chime: 'success' });
 
     for (const card of els.quizChoices.querySelectorAll('.quiz-choice-card')) {
       const id = card.dataset.wordId;
@@ -370,31 +379,83 @@ function renderQuizComplete() {
   announce('Hebat, selesai 5 gambar');
 }
 
+function renderActiveMode({ autoPlay = false } = {}) {
+  if (state.mode === 'explore') {
+    renderExplore();
+  } else if (state.mode === 'quiz') {
+    startQuizRound({ autoPlay });
+  } else if (state.mode === 'puzzle') {
+    if (puzzle) puzzle.startRound({ autoPlay });
+  } else if (games) {
+    games.startRound(state.mode, { autoPlay });
+  }
+}
+
 function setMode(nextMode) {
   if (state.mode === nextMode) return;
   state.mode = nextMode;
   audio.stop();
+  if (games) games.stop();
 
-  const isExplore = nextMode === 'explore';
-  els.tabExplore.setAttribute('aria-selected', String(isExplore));
-  els.tabExplore.tabIndex = isExplore ? 0 : -1;
-  els.tabQuiz.setAttribute('aria-selected', String(!isExplore));
-  els.tabQuiz.tabIndex = isExplore ? -1 : 0;
+  const tabs = [
+    ['explore', els.tabExplore],
+    ['quiz', els.tabQuiz],
+    ['puzzle', els.tabPuzzle],
+    ['memory', els.tabMemory],
+    ['counting', els.tabCounting],
+    ['odd', els.tabOdd],
+  ];
+  const isGamesMode = nextMode === 'memory' || nextMode === 'counting' || nextMode === 'odd';
+  els.panelExplore.hidden = nextMode !== 'explore';
+  els.panelQuiz.hidden = nextMode !== 'quiz';
+  els.panelPuzzle.hidden = nextMode !== 'puzzle';
+  els.panelGames.hidden = !isGamesMode;
 
-  els.panelExplore.hidden = !isExplore;
-  els.panelQuiz.hidden = isExplore;
-  els.viewModeBtn.hidden = !isExplore;
-
-  els.modeHint.textContent = isExplore
-    ? 'Sentuh gambar untuk mendengar pelafalan katanya.'
-    : 'Dengarkan suara, lalu pilih gambar yang sesuai.';
-
-  if (isExplore) {
-    renderExplore();
-  } else {
-    startQuizRound({ autoPlay: true });
+  for (const [key, tabEl] of tabs) {
+    const active = key === nextMode;
+    tabEl.setAttribute('aria-selected', String(active));
+    tabEl.tabIndex = active ? 0 : -1;
+    if (active && isGamesMode) {
+      els.panelGames.setAttribute('aria-labelledby', tabEl.id);
+    }
   }
+  els.viewModeBtn.hidden = nextMode !== 'explore';
+
+  const hints = {
+    explore: 'Sentuh gambar untuk mendengar pelafalan katanya.',
+    quiz: 'Dengarkan suara, lalu pilih gambar yang sesuai.',
+    puzzle: 'Susun potongan gambar, cocokkan bayangan, atau rangkai huruf.',
+    memory: 'Buka dua kartu yang sama untuk mencocokkan gambar dan kosakatanya.',
+    counting: 'Hitung jumlah gambarnya, lalu pilih kartu angka yang tepat.',
+    odd: 'Temukan satu gambar yang berbeda kelompok dari gambar lainnya.',
+  };
+  els.modeHint.textContent = hints[nextMode];
+
+  renderActiveMode({ autoPlay: nextMode !== 'explore' });
 }
+
+function resetCategory() {
+  state.category = 'all';
+  renderCategories();
+  renderActiveMode({ autoPlay: false });
+}
+
+const controllerDeps = {
+  audio,
+  getFilteredWords,
+  announce,
+  setLastAudioAction: (fn) => {
+    lastAudioAction = fn;
+  },
+  onSwitchExplore: () => setMode('explore'),
+  onResetCategory: resetCategory,
+};
+
+puzzle = createPuzzleController(controllerDeps);
+games = createGamesController({
+  ...controllerDeps,
+  getCategory: () => state.category,
+});
 
 // Event bindings
 els.soundToggle.addEventListener('click', () => {
@@ -409,19 +470,29 @@ els.audioRetryBtn.addEventListener('click', () => {
   if (lastAudioAction) lastAudioAction();
 });
 
-els.tabExplore.addEventListener('click', () => setMode('explore'));
-els.tabQuiz.addEventListener('click', () => setMode('quiz'));
-
-for (const tab of [els.tabExplore, els.tabQuiz]) {
-  tab.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+const modeTabs = [
+  { el: els.tabExplore, mode: 'explore' },
+  { el: els.tabQuiz, mode: 'quiz' },
+  { el: els.tabPuzzle, mode: 'puzzle' },
+  { el: els.tabMemory, mode: 'memory' },
+  { el: els.tabCounting, mode: 'counting' },
+  { el: els.tabOdd, mode: 'odd' },
+];
+modeTabs.forEach((entry, idx) => {
+  entry.el.addEventListener('click', () => setMode(entry.mode));
+  entry.el.addEventListener('keydown', (e) => {
+    let nextIdx = -1;
+    if (e.key === 'ArrowRight') nextIdx = (idx + 1) % modeTabs.length;
+    else if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + modeTabs.length) % modeTabs.length;
+    else if (e.key === 'Home') nextIdx = 0;
+    else if (e.key === 'End') nextIdx = modeTabs.length - 1;
+    if (nextIdx >= 0) {
       e.preventDefault();
-      const targetTab = tab === els.tabExplore ? els.tabQuiz : els.tabExplore;
-      targetTab.focus();
-      setMode(targetTab === els.tabExplore ? 'explore' : 'quiz');
+      modeTabs[nextIdx].el.focus();
+      setMode(modeTabs[nextIdx].mode);
     }
   });
-}
+});
 
 els.viewModeBtn.addEventListener('click', () => {
   state.spotlightMode = !state.spotlightMode;
@@ -456,11 +527,7 @@ els.spotlightNext.addEventListener('click', () => {
   playWordClip(items[state.spotlightIndex]);
 });
 
-els.resetCategoryBtn.addEventListener('click', () => {
-  state.category = 'all';
-  renderCategories();
-  renderExplore();
-});
+els.resetCategoryBtn.addEventListener('click', resetCategory);
 
 function setChoiceCount(count) {
   state.quizChoiceCount = count;
