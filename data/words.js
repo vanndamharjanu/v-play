@@ -166,8 +166,16 @@ export function getPromptText(item) {
   return `Where is the ${lower}?`;
 }
 
+export const PRAISE_INTRO_AUDIO = './assets/audio/feedback/Great.wav';
+
 export function getPraiseText(item) {
   return item.category === 'alphabets' ? `Great! Letter ${item.word}!` : `Great! ${item.word}!`;
+}
+
+export function getRetryAudio(attemptCount) {
+  return attemptCount % 2 === 1
+    ? './assets/audio/feedback/try-again.wav'
+    : './assets/audio/feedback/almost.wav';
 }
 
 export function filterWords(categoryId, list = WORDS) {

@@ -6,6 +6,7 @@ export class AudioController {
     this.currentAudio = null;
     this.audioCtx = null;
     this.playToken = 0;
+    this._cancelClip = null;
     this.onStateChange = onStateChange || (() => {});
   }
 
@@ -18,6 +19,9 @@ export class AudioController {
 
   stop() {
     this.playToken++;
+    if (this._cancelClip) {
+      this._cancelClip();
+    }
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;
@@ -78,6 +82,9 @@ export class AudioController {
     this.stop();
     if (this.muted) return true;
 
+    const sources = (Array.isArray(src) ? src : [src]).filter(Boolean);
+    if (!sources.length) return false;
+
     const token = ++this.playToken;
     if (chime) {
       this.playChime(chime);
@@ -91,54 +98,75 @@ export class AudioController {
     }, 120);
 
     try {
-      const audio = new Audio(src);
+      // Reuse one Audio element across sequential clips so mobile browsers keep the tap activation.
+      const audio = new Audio();
       audio.preload = 'auto';
       this.currentAudio = audio;
 
-      await new Promise((resolve, reject) => {
-        const cleanup = () => {
+      for (let i = 0; i < sources.length; i++) {
+        if (token !== this.playToken) {
           clearTimeout(loadingTimer);
-          audio.removeEventListener('playing', onPlaying);
-          audio.removeEventListener('ended', onEnded);
-          audio.removeEventListener('error', onError);
-        };
-        const markPlaying = () => {
-          settled = true;
-          clearTimeout(loadingTimer);
-          if (token !== this.playToken) return;
-          this.onStateChange({ status: 'playing', message: '' });
-        };
-        const onPlaying = () => markPlaying();
-        const onEnded = () => {
-          settled = true;
-          cleanup();
-          if (token === this.playToken) {
-            this.currentAudio = null;
-            this.onStateChange({ status: 'idle', message: '' });
-          }
-          resolve();
-        };
-        const onError = () => {
-          settled = true;
-          cleanup();
-          reject(new Error('Audio file failed to load'));
-        };
+          return false;
+        }
 
-        audio.addEventListener('playing', onPlaying);
-        audio.addEventListener('ended', onEnded);
-        audio.addEventListener('error', onError);
-
-        const p = audio.play();
-        if (p && typeof p.then === 'function') {
-          p.then(() => {
-            if (!audio.ended) markPlaying();
-          }).catch((err) => {
+        const outcome = await new Promise((resolve, reject) => {
+          const cleanup = () => {
+            clearTimeout(loadingTimer);
+            if (this._cancelClip === cancelFn) this._cancelClip = null;
+            audio.removeEventListener('playing', onPlaying);
+            audio.removeEventListener('ended', onEnded);
+            audio.removeEventListener('error', onError);
+          };
+          const cancelFn = () => {
             settled = true;
             cleanup();
-            reject(err);
-          });
+            resolve('cancelled');
+          };
+          const onPlaying = () => {
+            settled = true;
+            clearTimeout(loadingTimer);
+            if (token === this.playToken) {
+              this.onStateChange({ status: 'playing', message: '' });
+            }
+          };
+          const onEnded = () => {
+            settled = true;
+            cleanup();
+            resolve('ended');
+          };
+          const onError = () => {
+            settled = true;
+            cleanup();
+            reject(new Error('Audio file failed to load'));
+          };
+
+          this._cancelClip = cancelFn;
+          audio.addEventListener('playing', onPlaying);
+          audio.addEventListener('ended', onEnded);
+          audio.addEventListener('error', onError);
+          audio.src = sources[i];
+
+          const p = audio.play();
+          if (p && typeof p.then === 'function') {
+            p.then(() => {
+              if (!audio.ended && token === this.playToken) onPlaying();
+            }).catch((err) => {
+              settled = true;
+              cleanup();
+              reject(err);
+            });
+          }
+        });
+
+        if (outcome === 'cancelled' || token !== this.playToken) {
+          return false;
         }
-      });
+      }
+
+      if (token === this.playToken) {
+        this.currentAudio = null;
+        this.onStateChange({ status: 'idle', message: '' });
+      }
       return true;
     } catch (err) {
       settled = true;

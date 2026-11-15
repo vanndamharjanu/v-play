@@ -10,6 +10,8 @@ import {
   buildQuizRound,
   getPromptText,
   getPraiseText,
+  PRAISE_INTRO_AUDIO,
+  getRetryAudio,
 } from '../data/words.js';
 
 const rootDir = path.resolve(import.meta.dirname, '..');
@@ -26,8 +28,9 @@ test('every word entry has unique id and points to existing image and audio file
       assert.ok(fs.statSync(full).size > 500, `asset unexpectedly tiny: ${rel}`);
     }
   }
-  assert.ok(fs.existsSync(path.join(rootDir, 'assets/audio/feedback/try-again.mp3')));
-  assert.ok(fs.existsSync(path.join(rootDir, 'assets/audio/feedback/almost.mp3')));
+  assert.ok(fs.existsSync(path.join(rootDir, getRetryAudio(1))));
+  assert.ok(fs.existsSync(path.join(rootDir, getRetryAudio(2))));
+  assert.ok(fs.existsSync(path.join(rootDir, PRAISE_INTRO_AUDIO)));
 });
 
 test('every image in category subfolders is referenced in WORDS', () => {
@@ -99,5 +102,65 @@ test('buildQuizRound limits round size to pool length and contains valid questio
     assert.ok(q.choices.some((c) => c.id === q.target.id));
   }
   assert.deepEqual(buildQuizRound([], 2, 5), []);
+});
+
+test('AudioController plays sequential clips on one Audio element and stops cleanly mid-sequence', async () => {
+  const { AudioController } = await import('../audio.js');
+  const prevWindow = globalThis.window;
+  const prevAudio = globalThis.Audio;
+  const instances = [];
+  const playedSrcs = [];
+
+  class FakeAudio {
+    constructor() {
+      this.src = '';
+      this.ended = false;
+      this.listeners = new Map();
+      instances.push(this);
+    }
+    addEventListener(type, fn) {
+      if (!this.listeners.has(type)) this.listeners.set(type, new Set());
+      this.listeners.get(type).add(fn);
+    }
+    removeEventListener(type, fn) {
+      this.listeners.get(type)?.delete(fn);
+    }
+    emit(type) {
+      for (const fn of [...(this.listeners.get(type) || [])]) fn();
+    }
+    pause() {}
+    play() {
+      playedSrcs.push(this.src);
+      return Promise.resolve();
+    }
+  }
+
+  globalThis.window = {};
+  globalThis.Audio = FakeAudio;
+  try {
+    const statuses = [];
+    const ctrl = new AudioController({ onStateChange: ({ status }) => statuses.push(status) });
+
+    const seqPromise = ctrl.playVoice(['a.wav', 'b.mp3'], 'Great! Cat!');
+    await Promise.resolve();
+    instances[0].emit('ended');
+    await Promise.resolve();
+    instances[0].emit('ended');
+    assert.equal(await seqPromise, true);
+    assert.deepEqual(playedSrcs, ['a.wav', 'b.mp3']);
+    assert.equal(instances.length, 1);
+    assert.equal(statuses.at(-1), 'idle');
+
+    // Mid-sequence stop must cancel before advancing to the second clip.
+    playedSrcs.length = 0;
+    const aborted = ctrl.playVoice(['a.wav', 'b.mp3'], 'Great! Cat!');
+    await Promise.resolve();
+    ctrl.stop();
+    assert.equal(await aborted, false);
+    assert.deepEqual(playedSrcs, ['a.wav']);
+  } finally {
+    globalThis.window = prevWindow;
+    globalThis.Audio = prevAudio;
+  }
 });
 

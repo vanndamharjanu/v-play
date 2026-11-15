@@ -1,4 +1,4 @@
-import { WORDS, getPraiseText } from './data/words.js';
+import { WORDS, getPraiseText, PRAISE_INTRO_AUDIO, getRetryAudio } from './data/words.js';
 import {
   GAME_LEVELS,
   buildMemoryDeck,
@@ -105,9 +105,9 @@ export function createGamesController({
   function playPraise(item) {
     if (!item) return;
     const praise = getPraiseText(item);
-    // shortcut: play warm word clip until praise MP3s are regenerated without "Yay"
-    setLastAudioAction(() => audio.playVoice(item.audioWord, praise, { chime: 'success' }));
-    audio.playVoice(item.audioWord, praise, { chime: 'success' });
+    const praiseAudio = [PRAISE_INTRO_AUDIO, item.audioWord];
+    setLastAudioAction(() => audio.playVoice(praiseAudio, praise, { chime: 'success' }));
+    audio.playVoice(praiseAudio, praise, { chime: 'success' });
   }
 
   // --- Memory Match ---
@@ -330,10 +330,7 @@ export function createGamesController({
     }
 
     gState.triedIds.add(picked.id);
-    const retryFile =
-      gState.triedIds.size % 2 === 1
-        ? './assets/audio/feedback/try-again.mp3'
-        : './assets/audio/feedback/almost.mp3';
+    const retryFile = getRetryAudio(gState.triedIds.size);
     setLastAudioAction(() => audio.playVoice(retryFile, 'Oops, try again!', { chime: 'retry' }));
     audio.playVoice(retryFile, 'Oops, try again!', { chime: 'retry' });
     renderCounting(question);
@@ -408,10 +405,7 @@ export function createGamesController({
     }
 
     gState.triedIds.add(picked.id);
-    const retryFile =
-      gState.triedIds.size % 2 === 1
-        ? './assets/audio/feedback/try-again.mp3'
-        : './assets/audio/feedback/almost.mp3';
+    const retryFile = getRetryAudio(gState.triedIds.size);
     setLastAudioAction(() => audio.playVoice(retryFile, 'Oops, try again!', { chime: 'retry' }));
     audio.playVoice(retryFile, 'Oops, try again!', { chime: 'retry' });
     renderOddOne(question);

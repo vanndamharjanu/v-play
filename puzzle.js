@@ -1,4 +1,4 @@
-import { WORDS, getPromptText, getPraiseText } from './data/words.js';
+import { WORDS, getPromptText, getPraiseText, PRAISE_INTRO_AUDIO, getRetryAudio } from './data/words.js';
 import { PUZZLE_LEVELS, buildPuzzleRound, getPuzzleLevelConfig } from './data/puzzle.js';
 
 const silhouetteCache = new Map();
@@ -183,9 +183,9 @@ export function createPuzzleController({
 
   function playPraise(item) {
     const praise = getPraiseText(item);
-    // shortcut: play warm word clip until praise MP3s are regenerated without "Yay"
-    setLastAudioAction(() => audio.playVoice(item.audioWord, praise, { chime: 'success' }));
-    audio.playVoice(item.audioWord, praise, { chime: 'success' });
+    const praiseAudio = [PRAISE_INTRO_AUDIO, item.audioWord];
+    setLastAudioAction(() => audio.playVoice(praiseAudio, praise, { chime: 'success' }));
+    audio.playVoice(praiseAudio, praise, { chime: 'success' });
   }
 
   function showFeedback(kind, message, { showNext = false } = {}) {
@@ -503,10 +503,7 @@ export function createPuzzleController({
       pickedCard.classList.add('is-tried');
     }
 
-    const retryFile =
-      pState.triedIds.size % 2 === 1
-        ? './assets/audio/feedback/try-again.mp3'
-        : './assets/audio/feedback/almost.mp3';
+    const retryFile = getRetryAudio(pState.triedIds.size);
     setLastAudioAction(() => audio.playVoice(retryFile, 'Oops, try again!', { chime: 'retry' }));
     audio.playVoice(retryFile, 'Oops, try again!', { chime: 'retry' });
 

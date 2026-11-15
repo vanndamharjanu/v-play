@@ -1,4 +1,4 @@
-import { CATEGORIES, WORDS, filterWords, buildQuizRound, getPromptText, getPraiseText } from './data/words.js';
+import { CATEGORIES, WORDS, filterWords, buildQuizRound, getPromptText, getPraiseText, PRAISE_INTRO_AUDIO, getRetryAudio } from './data/words.js';
 import { AudioController } from './audio.js';
 import { createPuzzleController } from './puzzle.js';
 import { createGamesController } from './games.js';
@@ -311,9 +311,9 @@ function handleQuizChoice(picked, target) {
   if (picked.id === target.id) {
     state.quizSolved = true;
     const praise = getPraiseText(target);
-    // shortcut: play warm word clip until praise MP3s are regenerated without "Yay"
-    lastAudioAction = () => audio.playVoice(target.audioWord, praise, { chime: 'success' });
-    audio.playVoice(target.audioWord, praise, { chime: 'success' });
+    const praiseAudio = [PRAISE_INTRO_AUDIO, target.audioWord];
+    lastAudioAction = () => audio.playVoice(praiseAudio, praise, { chime: 'success' });
+    audio.playVoice(praiseAudio, praise, { chime: 'success' });
 
     for (const card of els.quizChoices.querySelectorAll('.quiz-choice-card')) {
       const id = card.dataset.wordId;
@@ -347,10 +347,7 @@ function handleQuizChoice(picked, target) {
     pickedCard.disabled = true;
   }
 
-  const retryFile =
-    state.quizTriedIds.size % 2 === 1
-      ? './assets/audio/feedback/try-again.mp3'
-      : './assets/audio/feedback/almost.mp3';
+  const retryFile = getRetryAudio(state.quizTriedIds.size);
   lastAudioAction = () => audio.playVoice(retryFile, 'Oops, try again!', { chime: 'retry' });
   audio.playVoice(retryFile, 'Oops, try again!', { chime: 'retry' });
 
