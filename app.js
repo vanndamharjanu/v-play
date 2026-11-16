@@ -1,11 +1,32 @@
-import { CATEGORIES, WORDS, filterWords, buildQuizRound, getPromptText, getPraiseText, PRAISE_INTRO_AUDIO, getRetryAudio } from './data/words.js';
+import {
+  CATEGORIES,
+  WORDS,
+  FREE_MODES,
+  FREE_CATEGORIES,
+  filterWords,
+  buildQuizRound,
+  getPromptText,
+  getPraiseText,
+  PRAISE_INTRO_AUDIO,
+  getRetryAudio,
+  unlockCatalogWords,
+  resetToFreeWords,
+} from './data/words.js';
 import { AudioController } from './audio.js';
 import { createPuzzleController } from './puzzle.js';
 import { createGamesController } from './games.js';
 
+const LICENSE_STORAGE_KEY = 'vplay_license_v1';
+const DEVICE_STORAGE_KEY = 'vplay_device_v1';
+
 const state = {
   mode: 'explore', // 'explore' | 'quiz' | 'puzzle' | 'memory' | 'counting' | 'odd'
-  category: 'all',
+  category: 'animals',
+  unlocked: false,
+  licenseToken: '',
+  usedDevices: 0,
+  maxDevices: 3,
+  pendingAction: null,
   spotlightMode: false,
   spotlightIndex: 0,
   playingWordId: null,
@@ -23,6 +44,21 @@ const els = {
   menuCollapseBtn: document.getElementById('menu-collapse-btn'),
   menuActiveLabel: document.getElementById('menu-active-label'),
   menuCollapseAction: document.getElementById('menu-collapse-action'),
+  licenseTriggerBtn: document.getElementById('license-trigger-btn'),
+  licenseTriggerLabel: document.getElementById('license-trigger-label'),
+  licenseDialog: document.getElementById('license-dialog'),
+  licenseCloseBtn: document.getElementById('license-close-btn'),
+  licenseSummary: document.getElementById('license-summary'),
+  licenseForm: document.getElementById('license-form'),
+  licenseCodeInput: document.getElementById('license-code-input'),
+  licenseActivateBtn: document.getElementById('license-activate-btn'),
+  licenseStatus: document.getElementById('license-status'),
+  licenseBuyLink: document.getElementById('license-buy-link'),
+  licenseBuyHint: document.getElementById('license-buy-hint'),
+  licenseRecoverForm: document.getElementById('license-recover-form'),
+  licenseEmailInput: document.getElementById('license-email-input'),
+  licenseRecoverBtn: document.getElementById('license-recover-btn'),
+  licenseRecoverStatus: document.getElementById('license-recover-status'),
   soundToggle: document.getElementById('sound-toggle'),
   soundToggleLabel: document.getElementById('sound-toggle-label'),
   tabExplore: document.getElementById('tab-explore'),
@@ -159,10 +195,15 @@ function updatePlayingHighlights() {
 function renderCategories() {
   els.categoryList.innerHTML = '';
   for (const cat of CATEGORIES) {
+    const locked = !state.unlocked && !FREE_CATEGORIES.has(cat.id);
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'category-chip';
+    btn.classList.toggle('is-locked', locked);
     btn.setAttribute('aria-pressed', String(state.category === cat.id));
+    if (locked) {
+      btn.setAttribute('aria-label', `${cat.label}, perlu kode lisensi`);
+    }
 
     const thumb = document.createElement('span');
     thumb.className = 'cat-thumb';
@@ -190,7 +231,21 @@ function renderCategories() {
     label.textContent = cat.label;
 
     btn.append(thumb, label);
+    if (locked) {
+      const lockTag = document.createElement('span');
+      lockTag.className = 'cat-lock';
+      lockTag.setAttribute('aria-hidden', 'true');
+      lockTag.innerHTML =
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
+        '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+      btn.appendChild(lockTag);
+    }
+
     btn.addEventListener('click', () => {
+      if (locked) {
+        openLicenseModal({ type: 'category', value: cat.id });
+        return;
+      }
       state.category = cat.id;
       state.spotlightIndex = 0;
       renderCategories();
@@ -502,7 +557,131 @@ function revealFeedback(feedbackEl) {
   });
 }
 
+function safeGetStorage(key) {
+  try {
+    return window.localStorage?.getItem(key) || null;
+  } catch {
+    return null;
+  }
+}
+
+function safeSetStorage(key, val) {
+  try {
+    window.localStorage?.setItem(key, val);
+  } catch {
+    // Ignore storage quota / private mode failures.
+  }
+}
+
+function safeRemoveStorage(key) {
+  try {
+    window.localStorage?.removeItem(key);
+  } catch {
+    // Ignore private mode failures.
+  }
+}
+
+function getOrCreateDeviceId() {
+  let id = safeGetStorage(DEVICE_STORAGE_KEY);
+  if (!id || id.length < 8) {
+    id =
+      window.crypto?.randomUUID?.() ||
+      `dev_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+    safeSetStorage(DEVICE_STORAGE_KEY, id);
+  }
+  return id;
+}
+
+function setLicenseStatus(el, msg, kind = '') {
+  if (!el) return;
+  if (!msg) {
+    el.hidden = true;
+    el.textContent = '';
+    el.className = 'license-status';
+    return;
+  }
+  el.hidden = false;
+  el.textContent = msg;
+  el.className = `license-status ${kind}`.trim();
+}
+
+function syncAccessUI() {
+  els.licenseTriggerBtn.classList.toggle('is-unlocked', state.unlocked);
+  els.licenseTriggerLabel.textContent = state.unlocked ? 'Akses Penuh' : 'Buka Semua';
+  if (state.unlocked && state.usedDevices > 0) {
+    els.licenseSummary.textContent = `Akses penuh aktif (${state.usedDevices} dari ${state.maxDevices} perangkat). Seluruh 6 permainan dan 139 kosakata sudah terbuka.`;
+  } else if (state.unlocked) {
+    els.licenseSummary.textContent =
+      'Akses penuh aktif. Seluruh 6 permainan dan 139 kosakata sudah terbuka.';
+  } else {
+    els.licenseSummary.textContent =
+      'Gratis mencoba Sentuh & Dengar (Hewan). Masukkan kode lisensi dari pembelian Lynk.id untuk membuka semua 6 permainan & 139 kosakata (berlaku hingga 3 HP keluarga).';
+  }
+
+  for (const entry of modeTabs) {
+    const locked = !state.unlocked && !FREE_MODES.has(entry.mode);
+    entry.el.dataset.locked = String(locked);
+  }
+  renderCategories();
+}
+
+function openLicenseModal(pending = null) {
+  state.pendingAction = pending;
+  setLicenseStatus(els.licenseStatus, '');
+  setLicenseStatus(els.licenseRecoverStatus, '');
+  if (typeof els.licenseDialog?.showModal === 'function') {
+    if (!els.licenseDialog.open) els.licenseDialog.showModal();
+  } else {
+    els.licenseDialog?.setAttribute('open', '');
+  }
+  els.licenseCodeInput?.focus();
+}
+
+function closeLicenseModal() {
+  state.pendingAction = null;
+  if (typeof els.licenseDialog?.close === 'function') {
+    if (els.licenseDialog.open) els.licenseDialog.close();
+  } else {
+    els.licenseDialog?.removeAttribute('open');
+  }
+}
+
+function applyUnlockedCatalog({ token, catalog, usedDevices = 1, maxDevices = 3 }) {
+  if (!unlockCatalogWords(catalog)) return false;
+  state.unlocked = true;
+  state.licenseToken = token;
+  state.usedDevices = usedDevices;
+  state.maxDevices = maxDevices;
+  safeSetStorage(
+    LICENSE_STORAGE_KEY,
+    JSON.stringify({ token, catalog, usedDevices, maxDevices })
+  );
+  syncAccessUI();
+  return true;
+}
+
+function lockToFreePreview() {
+  resetToFreeWords();
+  state.unlocked = false;
+  state.licenseToken = '';
+  state.usedDevices = 0;
+  safeRemoveStorage(LICENSE_STORAGE_KEY);
+  if (!FREE_CATEGORIES.has(state.category)) {
+    state.category = 'animals';
+  }
+  syncAccessUI();
+  if (!FREE_MODES.has(state.mode)) {
+    setMode('explore');
+  } else {
+    renderExplore();
+  }
+}
+
 function setMode(nextMode) {
+  if (!state.unlocked && !FREE_MODES.has(nextMode)) {
+    openLicenseModal({ type: 'mode', value: nextMode });
+    return;
+  }
   if (state.mode === nextMode) return;
   state.mode = nextMode;
   audio.stop();
@@ -554,7 +733,7 @@ function setMode(nextMode) {
 }
 
 function resetCategory() {
-  state.category = 'all';
+  state.category = state.unlocked ? 'all' : 'animals';
   renderCategories();
   renderActiveMode({ autoPlay: false });
 }
@@ -595,6 +774,143 @@ els.audioRetryBtn.addEventListener('click', () => {
   if (lastAudioAction) lastAudioAction();
 });
 
+els.licenseTriggerBtn.addEventListener('click', () => openLicenseModal(null));
+els.licenseCloseBtn.addEventListener('click', closeLicenseModal);
+els.licenseDialog.addEventListener('click', (e) => {
+  if (e.target === els.licenseDialog) closeLicenseModal();
+});
+
+els.licenseForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const code = els.licenseCodeInput.value.trim();
+  if (!code) return;
+
+  els.licenseActivateBtn.disabled = true;
+  setLicenseStatus(els.licenseStatus, 'Memeriksa kode lisensi...');
+  try {
+    const res = await fetch('/api/license/activate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, deviceId: getOrCreateDeviceId() }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      setLicenseStatus(
+        els.licenseStatus,
+        data.error || 'Aktivasi gagal. Pastikan server Cloudflare aktif.',
+        'is-error'
+      );
+      return;
+    }
+
+    const pending = state.pendingAction;
+    applyUnlockedCatalog(data);
+    closeLicenseModal();
+
+    if (pending?.type === 'mode') {
+      setMode(pending.value);
+    } else if (pending?.type === 'category') {
+      state.category = pending.value;
+      state.spotlightIndex = 0;
+      renderCategories();
+      renderActiveMode({ autoPlay: true });
+    } else {
+      state.category = 'all';
+      renderCategories();
+      renderActiveMode({ autoPlay: false });
+    }
+    announce('Akses penuh v-play sudah aktif.');
+  } catch {
+    setLicenseStatus(
+      els.licenseStatus,
+      'Tidak dapat terhubung ke server aktivasi. Periksa koneksi internet Anda.',
+      'is-error'
+    );
+  } finally {
+    els.licenseActivateBtn.disabled = false;
+  }
+});
+
+els.licenseRecoverForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = els.licenseEmailInput.value.trim();
+  if (!email) return;
+
+  els.licenseRecoverBtn.disabled = true;
+  setLicenseStatus(els.licenseRecoverStatus, 'Mengirim permintaan...');
+  try {
+    const res = await fetch('/api/license/recover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setLicenseStatus(els.licenseRecoverStatus, data.error || 'Gagal mengirim permintaan.', 'is-error');
+      return;
+    }
+    setLicenseStatus(els.licenseRecoverStatus, data.message, 'is-success');
+  } catch {
+    setLicenseStatus(els.licenseRecoverStatus, 'Koneksi gagal, coba lagi sebentar.', 'is-error');
+  } finally {
+    els.licenseRecoverBtn.disabled = false;
+  }
+});
+
+async function initLicensing() {
+  const cachedRaw = safeGetStorage(LICENSE_STORAGE_KEY);
+  if (cachedRaw) {
+    try {
+      const cached = JSON.parse(cachedRaw);
+      if (cached?.token && Array.isArray(cached.catalog)) {
+        applyUnlockedCatalog(cached);
+        state.category = 'all';
+        renderCategories();
+        renderExplore();
+      }
+    } catch {
+      safeRemoveStorage(LICENSE_STORAGE_KEY);
+    }
+  }
+
+  try {
+    const cfgRes = await fetch('/api/config');
+    if (cfgRes.ok) {
+      const cfg = await cfgRes.json();
+      if (cfg.lynkUrl) {
+        els.licenseBuyLink.href = cfg.lynkUrl;
+        els.licenseBuyLink.hidden = false;
+        els.licenseBuyHint.hidden = true;
+      }
+    }
+  } catch {
+    // Offline or static dev without /api.
+  }
+
+  if (state.licenseToken) {
+    try {
+      const catRes = await fetch('/api/catalog', {
+        headers: { Authorization: `Bearer ${state.licenseToken}` },
+      });
+      if (catRes.status === 401 || catRes.status === 403) {
+        lockToFreePreview();
+      } else if (catRes.ok) {
+        const data = await catRes.json();
+        if (data?.ok) {
+          applyUnlockedCatalog({
+            token: state.licenseToken,
+            catalog: data.catalog,
+            usedDevices: data.usedDevices,
+            maxDevices: data.maxDevices,
+          });
+        }
+      }
+    } catch {
+      // Keep cached unlocked catalog while offline.
+    }
+  }
+}
+
 const modeTabs = [
   { el: els.tabExplore, mode: 'explore' },
   { el: els.tabQuiz, mode: 'quiz' },
@@ -614,7 +930,9 @@ modeTabs.forEach((entry, idx) => {
     if (nextIdx >= 0) {
       e.preventDefault();
       modeTabs[nextIdx].el.focus();
-      setMode(modeTabs[nextIdx].mode);
+      if (state.unlocked || FREE_MODES.has(modeTabs[nextIdx].mode)) {
+        setMode(modeTabs[nextIdx].mode);
+      }
     }
   });
 });
@@ -690,5 +1008,6 @@ els.quizBackExploreBtn.addEventListener('click', () => {
 });
 
 // Initial render
-renderCategories();
+syncAccessUI();
 renderExplore();
+initLicensing();

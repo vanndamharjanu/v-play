@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   WORDS,
+  FREE_WORDS,
   CATEGORIES,
   filterWords,
   pickQuestionChoices,
@@ -12,15 +13,27 @@ import {
   getPraiseText,
   PRAISE_INTRO_AUDIO,
   getRetryAudio,
+  unlockCatalogWords,
+  resetToFreeWords,
 } from '../data/words.js';
+import { FULL_WORDS } from '../functions/_lib/catalog.js';
 
 const rootDir = path.resolve(import.meta.dirname, '..');
 const folderCategories = ['animals', 'colors', 'fruits', 'objects', 'alphabets', 'numbers', 'shapes'];
 
-test('every word entry has unique id and points to existing image and audio files', () => {
+test('FREE_WORDS exposes 20 preview animals and unlockCatalogWords loads all 139 entries', () => {
+  resetToFreeWords();
+  assert.equal(FREE_WORDS.length, 20);
+  assert.equal(WORDS.length, 20);
+  assert.ok(WORDS.every((w) => w.category === 'animals'));
+  assert.equal(unlockCatalogWords(FULL_WORDS), true);
   assert.equal(WORDS.length, 139);
-  assert.equal(new Set(WORDS.map((w) => w.id)).size, WORDS.length);
-  for (const item of WORDS) {
+});
+
+test('every word entry has unique id and points to existing image and audio files', () => {
+  assert.equal(FULL_WORDS.length, 139);
+  assert.equal(new Set(FULL_WORDS.map((w) => w.id)).size, FULL_WORDS.length);
+  for (const item of FULL_WORDS) {
     assert.ok(CATEGORIES.some((c) => c.id === item.category), `unknown category ${item.category}`);
     assert.ok(typeof item.pronun === 'string' && item.pronun.trim().length > 0, `missing pronun for ${item.id}`);
     for (const rel of [item.image, item.audioWord, item.audioPrompt, item.audioPraise]) {
@@ -41,8 +54,8 @@ test('every word entry has unique id and points to existing image and audio file
   }
 });
 
-test('every image in category subfolders is referenced in WORDS', () => {
-  const referenced = new Set(WORDS.map((w) => path.resolve(rootDir, w.image)));
+test('every image in category subfolders is referenced in FULL_WORDS', () => {
+  const referenced = new Set(FULL_WORDS.map((w) => path.resolve(rootDir, w.image)));
   for (const cat of folderCategories) {
     const dir = path.join(rootDir, 'assets/images', cat);
     for (const file of fs.readdirSync(dir)) {
@@ -53,43 +66,43 @@ test('every image in category subfolders is referenced in WORDS', () => {
 });
 
 test('filterWords filters by category and handles unknown or all', () => {
-  assert.equal(filterWords('all').length, 139);
-  assert.equal(filterWords('animals').length, 20);
-  assert.equal(filterWords('colors').length, 12);
-  assert.equal(filterWords('fruits').length, 20);
-  assert.equal(filterWords('objects').length, 20);
-  assert.equal(filterWords('alphabets').length, 26);
-  assert.equal(filterWords('numbers').length, 29);
-  assert.equal(filterWords('shapes').length, 12);
-  assert.equal(filterWords('missing').length, 0);
+  assert.equal(filterWords('all', FULL_WORDS).length, 139);
+  assert.equal(filterWords('animals', FULL_WORDS).length, 20);
+  assert.equal(filterWords('colors', FULL_WORDS).length, 12);
+  assert.equal(filterWords('fruits', FULL_WORDS).length, 20);
+  assert.equal(filterWords('objects', FULL_WORDS).length, 20);
+  assert.equal(filterWords('alphabets', FULL_WORDS).length, 26);
+  assert.equal(filterWords('numbers', FULL_WORDS).length, 29);
+  assert.equal(filterWords('shapes', FULL_WORDS).length, 12);
+  assert.equal(filterWords('missing', FULL_WORDS).length, 0);
 });
 
 test('pickQuestionChoices returns unique options including target without duplicate word labels', () => {
   for (const cat of folderCategories) {
-    const pool = filterWords(cat);
+    const pool = filterWords(cat, FULL_WORDS);
     const target = pool[0];
     for (const count of [2, 3]) {
-      const choices = pickQuestionChoices(target, pool, count);
+      const choices = pickQuestionChoices(target, pool, count, FULL_WORDS);
       assert.equal(choices.length, count);
       assert.ok(choices.some((c) => c.id === target.id));
       assert.equal(new Set(choices.map((c) => c.id)).size, count);
     }
   }
 
-  const orangeFruit = WORDS.find((w) => w.id === 'orange');
+  const orangeFruit = FULL_WORDS.find((w) => w.id === 'orange');
   assert.ok(orangeFruit);
   for (let i = 0; i < 20; i++) {
-    const choices = pickQuestionChoices(orangeFruit, WORDS, 3);
+    const choices = pickQuestionChoices(orangeFruit, FULL_WORDS, 3, FULL_WORDS);
     assert.ok(!choices.some((c) => c.id === 'color-orange'));
   }
 });
 
 test('getPromptText and getPraiseText format category-specific speech clearly', () => {
-  const colorOrange = WORDS.find((w) => w.id === 'color-orange');
-  const fruitOrange = WORDS.find((w) => w.id === 'orange');
-  const letterA = WORDS.find((w) => w.id === 'letter-a');
-  const numberTen = WORDS.find((w) => w.id === 'number-10');
-  const shapeStar = WORDS.find((w) => w.id === 'star');
+  const colorOrange = FULL_WORDS.find((w) => w.id === 'color-orange');
+  const fruitOrange = FULL_WORDS.find((w) => w.id === 'orange');
+  const letterA = FULL_WORDS.find((w) => w.id === 'letter-a');
+  const numberTen = FULL_WORDS.find((w) => w.id === 'number-10');
+  const shapeStar = FULL_WORDS.find((w) => w.id === 'star');
 
   assert.equal(getPromptText(colorOrange), 'Where is the color orange?');
   assert.equal(getPromptText(fruitOrange), 'Where is the orange?');
@@ -102,8 +115,8 @@ test('getPromptText and getPraiseText format category-specific speech clearly', 
 });
 
 test('buildQuizRound limits round size to pool length and contains valid questions', () => {
-  const pool = filterWords('fruits');
-  const round = buildQuizRound(pool, 3, 5);
+  const pool = filterWords('fruits', FULL_WORDS);
+  const round = buildQuizRound(pool, 3, 5, FULL_WORDS);
   assert.equal(round.length, 5);
   for (const q of round) {
     assert.equal(q.choices.length, 3);

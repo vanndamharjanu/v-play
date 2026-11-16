@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CATEGORIES, WORDS, filterWords } from '../data/words.js';
+import { CATEGORIES, filterWords } from '../data/words.js';
+import { FULL_WORDS } from '../functions/_lib/catalog.js';
 import {
   PUZZLE_LEVELS,
   sanitizePuzzleLetters,
@@ -63,17 +64,17 @@ test('buildLetterTray includes all target letters and adds distractors cleanly',
 
 test('buildPuzzleRound works for every category, puzzle type, and level', () => {
   for (const cat of ['all', ...realCategories]) {
-    const pool = filterWords(cat, WORDS);
+    const pool = filterWords(cat, FULL_WORDS);
     for (const level of [1, 2, 3]) {
       const cfg = PUZZLE_LEVELS[level];
 
-      const jigsaw = buildPuzzleRound(pool, 'jigsaw', level, WORDS);
+      const jigsaw = buildPuzzleRound(pool, 'jigsaw', level, FULL_WORDS);
       assert.equal(jigsaw.length, cfg.roundSize);
       for (const q of jigsaw) {
         assert.equal(q.pieces.length, cfg.jigsawCols * cfg.jigsawRows);
       }
 
-      const shadow = buildPuzzleRound(pool, 'shadow', level, WORDS);
+      const shadow = buildPuzzleRound(pool, 'shadow', level, FULL_WORDS);
       assert.equal(shadow.length, cfg.roundSize);
       for (const q of shadow) {
         assert.equal(q.choices.length, cfg.shadowChoices);
@@ -81,7 +82,7 @@ test('buildPuzzleRound works for every category, puzzle type, and level', () => 
         assert.equal(new Set(q.choices.map((c) => c.id)).size, cfg.shadowChoices);
       }
 
-      const letters = buildPuzzleRound(pool, 'letters', level, WORDS);
+      const letters = buildPuzzleRound(pool, 'letters', level, FULL_WORDS);
       assert.equal(letters.length, cfg.roundSize);
       for (const q of letters) {
         assert.ok(q.letters.length >= 1);

@@ -1,0 +1,14 @@
+.git/
+.gitignore
+.assetsignore
+.nojekyll
+.wrangler/
+.dev.vars
+node_modules/
+src/
+functions/
+migrations/
+tests/
+wrangler.toml
+README.md
+DESIGN.md

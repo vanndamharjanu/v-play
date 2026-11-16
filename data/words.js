@@ -9,7 +9,10 @@ export const CATEGORIES = [
   { id: 'shapes', label: 'Bentuk', thumb: './assets/images/shapes/star.jpg' },
 ];
 
-const entry = (category, id, word, indo, pronun, imageFile = `${id}.jpg`) => ({
+export const FREE_MODES = new Set(['explore']);
+export const FREE_CATEGORIES = new Set(['animals']);
+
+export const wordEntry = (category, id, word, indo, pronun, imageFile = `${id}.jpg`) => ({
   id,
   word,
   indo,
@@ -21,150 +24,41 @@ const entry = (category, id, word, indo, pronun, imageFile = `${id}.jpg`) => ({
   audioPraise: `./assets/audio/praise/${id}.mp3`,
 });
 
-const ALPHABET_PRONUN = {
-  A: 'ei', B: 'bi', C: 'si', D: 'di', E: 'i', F: 'ef', G: 'ji',
-  H: 'eich', I: 'ai', J: 'jei', K: 'kei', L: 'el', M: 'em', N: 'en',
-  O: 'ou', P: 'pi', Q: 'kyu', R: 'ar', S: 'es', T: 'ti', U: 'yu',
-  V: 'vi', W: 'DAB-ul-yu', X: 'eks', Y: 'wai', Z: 'zi',
-};
-
-const NUMBER_ITEMS = [
-  [0, 'Zero', 'nol', 'ZI-rou'],
-  [1, 'One', 'satu', 'wan'],
-  [2, 'Two', 'dua', 'tu'],
-  [3, 'Three', 'tiga', 'thri'],
-  [4, 'Four', 'empat', 'for'],
-  [5, 'Five', 'lima', 'faiv'],
-  [6, 'Six', 'enam', 'siks'],
-  [7, 'Seven', 'tujuh', 'SEV-uhn'],
-  [8, 'Eight', 'delapan', 'eit'],
-  [9, 'Nine', 'sembilan', 'nain'],
-  [10, 'Ten', 'sepuluh', 'ten'],
-  [11, 'Eleven', 'sebelas', 'ih-LEV-uhn'],
-  [12, 'Twelve', 'dua belas', 'twelv'],
-  [13, 'Thirteen', 'tiga belas', 'thur-TEEN'],
-  [14, 'Fourteen', 'empat belas', 'for-TEEN'],
-  [15, 'Fifteen', 'lima belas', 'fif-TEEN'],
-  [16, 'Sixteen', 'enam belas', 'siks-TEEN'],
-  [17, 'Seventeen', 'tujuh belas', 'sev-uhn-TEEN'],
-  [18, 'Eighteen', 'delapan belas', 'ei-TEEN'],
-  [19, 'Nineteen', 'sembilan belas', 'nain-TEEN'],
-  [20, 'Twenty', 'dua puluh', 'TWEN-ti'],
-  [30, 'Thirty', 'tiga puluh', 'THUR-ti'],
-  [40, 'Forty', 'empat puluh', 'FOR-ti'],
-  [50, 'Fifty', 'lima puluh', 'FIF-ti'],
-  [60, 'Sixty', 'enam puluh', 'SIKS-ti'],
-  [70, 'Seventy', 'tujuh puluh', 'SEV-uhn-ti'],
-  [80, 'Eighty', 'delapan puluh', 'EI-ti'],
-  [90, 'Ninety', 'sembilan puluh', 'NAIN-ti'],
-  [100, 'One hundred', 'seratus', 'wan HUN-druhd'],
+// Only the free preview subset ships statically in client JS; paid words arrive from /api/catalog after license activation.
+export const FREE_WORDS = [
+  wordEntry('animals', 'bear', 'Bear', 'beruang', 'ber'),
+  wordEntry('animals', 'butterfly', 'Butterfly', 'kupu-kupu', 'BUT-uhr-flai'),
+  wordEntry('animals', 'cat', 'Cat', 'kucing', 'kat'),
+  wordEntry('animals', 'chicken', 'Chicken', 'ayam', 'CHIK-uhn'),
+  wordEntry('animals', 'cow', 'Cow', 'sapi', 'kau'),
+  wordEntry('animals', 'dog', 'Dog', 'anjing', 'dog'),
+  wordEntry('animals', 'duck', 'Duck', 'bebek', 'dak'),
+  wordEntry('animals', 'elephant', 'Elephant', 'gajah', 'EL-uh-funt'),
+  wordEntry('animals', 'fish', 'Fish', 'ikan', 'fish'),
+  wordEntry('animals', 'frog', 'Frog', 'katak', 'frog'),
+  wordEntry('animals', 'giraffe', 'Giraffe', 'jerapah', 'juh-RAF'),
+  wordEntry('animals', 'goat', 'Goat', 'kambing', 'gout'),
+  wordEntry('animals', 'horse', 'Horse', 'kuda', 'hors'),
+  wordEntry('animals', 'lion', 'Lion', 'singa', 'LAI-uhn'),
+  wordEntry('animals', 'monkey', 'Monkey', 'monyet', 'MUNG-ki'),
+  wordEntry('animals', 'rabbit', 'Rabbit', 'kelinci', 'RAB-it'),
+  wordEntry('animals', 'sheep', 'Sheep', 'domba', 'ship'),
+  wordEntry('animals', 'tiger', 'Tiger', 'harimau', 'TAI-guhr'),
+  wordEntry('animals', 'turtle', 'Turtle', 'kura-kura', 'TUR-tuhl'),
+  wordEntry('animals', 'zebra', 'Zebra', 'zebra', 'ZI-bruh'),
 ];
 
-export const WORDS = [
-  // Animals (20)
-  entry('animals', 'bear', 'Bear', 'beruang', 'ber'),
-  entry('animals', 'butterfly', 'Butterfly', 'kupu-kupu', 'BUT-uhr-flai'),
-  entry('animals', 'cat', 'Cat', 'kucing', 'kat'),
-  entry('animals', 'chicken', 'Chicken', 'ayam', 'CHIK-uhn'),
-  entry('animals', 'cow', 'Cow', 'sapi', 'kau'),
-  entry('animals', 'dog', 'Dog', 'anjing', 'dog'),
-  entry('animals', 'duck', 'Duck', 'bebek', 'dak'),
-  entry('animals', 'elephant', 'Elephant', 'gajah', 'EL-uh-funt'),
-  entry('animals', 'fish', 'Fish', 'ikan', 'fish'),
-  entry('animals', 'frog', 'Frog', 'katak', 'frog'),
-  entry('animals', 'giraffe', 'Giraffe', 'jerapah', 'juh-RAF'),
-  entry('animals', 'goat', 'Goat', 'kambing', 'gout'),
-  entry('animals', 'horse', 'Horse', 'kuda', 'hors'),
-  entry('animals', 'lion', 'Lion', 'singa', 'LAI-uhn'),
-  entry('animals', 'monkey', 'Monkey', 'monyet', 'MUNG-ki'),
-  entry('animals', 'rabbit', 'Rabbit', 'kelinci', 'RAB-it'),
-  entry('animals', 'sheep', 'Sheep', 'domba', 'ship'),
-  entry('animals', 'tiger', 'Tiger', 'harimau', 'TAI-guhr'),
-  entry('animals', 'turtle', 'Turtle', 'kura-kura', 'TUR-tuhl'),
-  entry('animals', 'zebra', 'Zebra', 'zebra', 'ZI-bruh'),
+export const WORDS = [...FREE_WORDS];
 
-  // Colors (12)
-  entry('colors', 'black', 'Black', 'hitam', 'blak'),
-  entry('colors', 'blue', 'Blue', 'biru', 'blu'),
-  entry('colors', 'brown', 'Brown', 'cokelat', 'braun'),
-  entry('colors', 'gold', 'Gold', 'emas', 'gould'),
-  entry('colors', 'green', 'Green', 'hijau', 'grin'),
-  entry('colors', 'grey', 'Grey', 'abu-abu', 'grei'),
-  entry('colors', 'color-orange', 'Orange', 'oranye', 'OR-inj', 'orange.jpg'),
-  entry('colors', 'pink', 'Pink', 'merah muda', 'pingk'),
-  entry('colors', 'purple', 'Purple', 'ungu', 'PUR-puhl'),
-  entry('colors', 'red', 'Red', 'merah', 'red'),
-  entry('colors', 'white', 'White', 'putih', 'wait'),
-  entry('colors', 'yellow', 'Yellow', 'kuning', 'YEL-ou'),
+export function unlockCatalogWords(fullList) {
+  if (!Array.isArray(fullList) || fullList.length <= FREE_WORDS.length) return false;
+  WORDS.splice(0, WORDS.length, ...fullList);
+  return true;
+}
 
-  // Fruits (20)
-  entry('fruits', 'apple', 'Apple', 'apel', 'AP-uhl'),
-  entry('fruits', 'avocado', 'Avocado', 'alpukat', 'av-uh-KA-dou'),
-  entry('fruits', 'banana', 'Banana', 'pisang', 'buh-NA-nuh'),
-  entry('fruits', 'blueberry', 'Blueberry', 'bluberi', 'BLU-ber-i', 'Blueberry.jpg'),
-  entry('fruits', 'cherry', 'Cherry', 'ceri', 'CHER-i'),
-  entry('fruits', 'coconut', 'Coconut', 'kelapa', 'KOU-kuh-nat'),
-  entry('fruits', 'dragon-fruit', 'Dragon fruit', 'buah naga', 'DRAG-uhn frut', 'Dragon_fruit.jpg'),
-  entry('fruits', 'grape', 'Grape', 'anggur', 'greip'),
-  entry('fruits', 'kiwi', 'Kiwi', 'kiwi', 'KI-wi'),
-  entry('fruits', 'lemon', 'Lemon', 'lemon', 'LEM-uhn'),
-  entry('fruits', 'mango', 'Mango', 'mangga', 'MANG-gou'),
-  entry('fruits', 'mangosteen', 'Mangosteen', 'manggis', 'MANG-guh-stin'),
-  entry('fruits', 'melon', 'Melon', 'melon', 'MEL-uhn'),
-  entry('fruits', 'orange', 'Orange', 'jeruk', 'OR-inj', 'orange_fruit.jpg'),
-  entry('fruits', 'papaya', 'Papaya', 'pepaya', 'puh-PAI-uh'),
-  entry('fruits', 'pear', 'Pear', 'pir', 'per'),
-  entry('fruits', 'pineapple', 'Pineapple', 'nanas', 'PAI-nap-uhl'),
-  entry('fruits', 'snakefruit', 'Snake fruit', 'salak', 'SNEIK frut'),
-  entry('fruits', 'strawberry', 'Strawberry', 'stroberi', 'STRO-ber-i'),
-  entry('fruits', 'watermelon', 'Watermelon', 'semangka', 'WO-tuhr-mel-uhn'),
-
-  // Objects (20)
-  entry('objects', 'airplane', 'Airplane', 'pesawat', 'ER-plein'),
-  entry('objects', 'backpack', 'Backpack', 'tas ransel', 'BAK-pak'),
-  entry('objects', 'ball', 'Ball', 'bola', 'bol'),
-  entry('objects', 'bicycle', 'Bicycle', 'sepeda', 'BAI-si-kuhl'),
-  entry('objects', 'book', 'Book', 'buku', 'buk'),
-  entry('objects', 'bus', 'Bus', 'bus', 'bas'),
-  entry('objects', 'car', 'Car', 'mobil', 'kar'),
-  entry('objects', 'chair', 'Chair', 'kursi', 'cher'),
-  entry('objects', 'clock', 'Clock', 'jam', 'klok'),
-  entry('objects', 'cup', 'Cup', 'cangkir', 'kap'),
-  entry('objects', 'hat', 'Hat', 'topi', 'hat'),
-  entry('objects', 'pencil', 'Pencil', 'pensil', 'PEN-suhl'),
-  entry('objects', 'plate', 'Plate', 'piring', 'pleit'),
-  entry('objects', 'shoe', 'Shoe', 'sepatu', 'shu'),
-  entry('objects', 'spoon', 'Spoon', 'sendok', 'spun'),
-  entry('objects', 't-shirt', 'T-shirt', 'kaus', 'TI-shurt'),
-  entry('objects', 'table', 'Table', 'meja', 'TEI-buhl'),
-  entry('objects', 'teddy-bear', 'Teddy bear', 'boneka beruang', 'TED-i ber', 'Teddy_bear.jpg'),
-  entry('objects', 'toothbrush', 'Toothbrush', 'sikat gigi', 'TUTH-brash'),
-  entry('objects', 'umbrella', 'Umbrella', 'payung', 'am-BREL-uh'),
-
-  // Alphabets (26)
-  ...[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map((ch) =>
-    entry('alphabets', `letter-${ch.toLowerCase()}`, ch, `huruf ${ch}`, ALPHABET_PRONUN[ch], `${ch}.jpg`)
-  ),
-
-  // Numbers (29)
-  ...NUMBER_ITEMS.map(([n, word, indo, pronun]) =>
-    entry('numbers', `number-${n}`, word, indo, pronun, `${n}.jpg`)
-  ),
-
-  // Shapes (12)
-  entry('shapes', 'circle', 'Circle', 'lingkaran', 'SUR-kuhl'),
-  entry('shapes', 'cross', 'Cross', 'tanda tambah', 'kros'),
-  entry('shapes', 'diamond', 'Diamond', 'belah ketupat', 'DAI-uh-muhnd'),
-  entry('shapes', 'heart', 'Heart', 'hati', 'hart'),
-  entry('shapes', 'hexagon', 'Hexagon', 'segi enam', 'HEK-suh-gon'),
-  entry('shapes', 'moon', 'Moon', 'bulan sabit', 'mun'),
-  entry('shapes', 'oval', 'Oval', 'lonjong', 'OU-vuhl'),
-  entry('shapes', 'pentagon', 'Pentagon', 'segi lima', 'PEN-tuh-gon'),
-  entry('shapes', 'rectangle', 'Rectangle', 'persegi panjang', 'REK-tang-guhl'),
-  entry('shapes', 'square', 'Square', 'persegi', 'skwer'),
-  entry('shapes', 'star', 'Star', 'bintang', 'star'),
-  entry('shapes', 'triangle', 'Triangle', 'segitiga', 'TRAI-ang-guhl'),
-];
+export function resetToFreeWords() {
+  WORDS.splice(0, WORDS.length, ...FREE_WORDS);
+}
 
 export function getPromptText(item) {
   const lower = item.word.toLowerCase();

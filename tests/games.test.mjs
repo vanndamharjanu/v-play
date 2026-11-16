@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CATEGORIES, WORDS, filterWords } from '../data/words.js';
+import { CATEGORIES, filterWords } from '../data/words.js';
+import { FULL_WORDS } from '../functions/_lib/catalog.js';
 import {
   GAME_LEVELS,
   buildMemoryDeck,
@@ -14,7 +15,7 @@ test('buildMemoryDeck creates exact pairs and shuffled cards across levels and c
   assert.deepEqual(buildMemoryDeck([], 1), { pairs: [], cards: [] });
 
   for (const cat of ['all', ...realCategories]) {
-    const pool = filterWords(cat, WORDS);
+    const pool = filterWords(cat, FULL_WORDS);
     for (const level of [1, 2, 3]) {
       const cfg = GAME_LEVELS[level];
       const deck = buildMemoryDeck(pool, level);
@@ -31,13 +32,13 @@ test('buildMemoryDeck creates exact pairs and shuffled cards across levels and c
 });
 
 test('buildCountingRound builds valid counting prompts and choices across levels and categories', () => {
-  assert.deepEqual(buildCountingRound([], 'animals', 1, WORDS), []);
+  assert.deepEqual(buildCountingRound([], 'animals', 1, FULL_WORDS), []);
 
   for (const cat of ['all', ...realCategories]) {
-    const pool = filterWords(cat, WORDS);
+    const pool = filterWords(cat, FULL_WORDS);
     for (const level of [1, 2, 3]) {
       const cfg = GAME_LEVELS[level];
-      const round = buildCountingRound(pool, cat, level, WORDS);
+      const round = buildCountingRound(pool, cat, level, FULL_WORDS);
       assert.equal(round.length, cfg.roundSize);
 
       for (const q of round) {
@@ -55,7 +56,7 @@ test('buildOddOneRound picks main category group and one distinct outlier across
   for (const cat of ['all', ...realCategories]) {
     for (const level of [1, 2, 3]) {
       const cfg = GAME_LEVELS[level];
-      const round = buildOddOneRound(cat, level, WORDS);
+      const round = buildOddOneRound(cat, level, FULL_WORDS);
       assert.equal(round.length, cfg.roundSize);
 
       for (const q of round) {
