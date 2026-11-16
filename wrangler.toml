@@ -8,10 +8,7 @@ directory = "."
 binding = "ASSETS"
 run_worker_first = ["/api/*"]
 
-# Setelah membuat D1 database "funplay-licenses" di Cloudflare Dashboard,
-# hapus tanda # di 4 baris bawah dan isi database_id asli Anda
-# agar setiap git push berikutnya tetap menjaga binding DB aktif:
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "funplay-licenses"
-# database_id = "PASTE_D1_DATABASE_ID_HERE"
+[[d1_databases]]
+binding = "DB"
+database_name = "funplay-licenses"
+database_id = "f5eebcc0-276f-4fd0-84c0-a0f83c06d5b6"
