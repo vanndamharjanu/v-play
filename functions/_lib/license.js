@@ -184,20 +184,30 @@ export async function sendLicenseEmail({ apiKey, fromEmail, toEmail, name, code,
   if (!apiKey || !fromEmail || !toEmail) {
     return { sent: false, skipped: true };
   }
-  const safeName = escapeHtml(name || 'Orang Tua Hebat');
+  const displayName = String(name || '').trim() || 'Bapak/Ibu';
+  const targetUrl = String(appUrl || 'https://funplay.web.id').trim() || 'https://funplay.web.id';
+  const safeName = escapeHtml(displayName);
   const safeCode = escapeHtml(code);
-  const safeUrl = escapeHtml(appUrl || 'https://funplay.workers.dev');
+  const safeUrl = escapeHtml(targetUrl);
+
+  const text = [
+    `Halo ${displayName},`,
+    '',
+    `Berikut kode akses FunPlay Anda (berlaku hingga ${maxDevices} perangkat):`,
+    code,
+    '',
+    'Cara aktivasi:',
+    `1. Buka ${targetUrl}`,
+    '2. Ketuk tombol Buka Semua',
+    '3. Masukkan kode akses di atas lalu pilih Aktifkan',
+  ].join('\n');
 
   const html = `
-    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1B282C;line-height:1.5">
-      <h2 style="color:#007C91">Kode Akses Penuh FunPlay</h2>
-      <p>Halo ${safeName}, terima kasih sudah mendukung belajar bahasa Inggris bersama <strong>FunPlay</strong>!</p>
-      <p>Gunakan kode akses sekali bayar di bawah ini (berlaku hingga <strong>${maxDevices} perangkat</strong> keluarga):</p>
-      <div style="margin:16px 0;padding:16px;border-radius:14px;background:#D9F6FA;border:2px solid #34C5D9;text-align:center;font-size:22px;font-weight:700;letter-spacing:2px;color:#005B6B">
-        ${safeCode}
-      </div>
-      <p><a href="${safeUrl}" style="display:inline-block;padding:12px 20px;border-radius:12px;background:#86DC62;color:#1B282C;font-weight:700;text-decoration:none">Buka FunPlay &amp; Aktifkan Sekarang</a></p>
-      <p style="font-size:13px;color:#52676D">Buka link di atas, ketuk tombol <strong>Buka Semua</strong>, lalu tempel kode ini.</p>
+    <div style="font-family:sans-serif;color:#1B282C;line-height:1.6">
+      <p>Halo ${safeName},</p>
+      <p>Berikut kode akses FunPlay Anda (berlaku hingga ${maxDevices} perangkat):</p>
+      <p style="font-family:monospace;font-size:18px;font-weight:700;letter-spacing:1px">${safeCode}</p>
+      <p>Cara aktivasi:<br>1. Buka <a href="${safeUrl}">${safeUrl}</a><br>2. Ketuk tombol Buka Semua<br>3. Masukkan kode akses di atas lalu pilih Aktifkan</p>
     </div>
   `.trim();
 
@@ -210,7 +220,8 @@ export async function sendLicenseEmail({ apiKey, fromEmail, toEmail, name, code,
     body: JSON.stringify({
       from: fromEmail,
       to: [toEmail],
-      subject: `Kode Akses FunPlay Anda: ${code}`,
+      subject: `Kode Akses FunPlay - ${code}`,
+      text,
       html,
     }),
   });

@@ -47,6 +47,6 @@ export async function onRequestPost(context) {
     ok: true,
     emailConfigured,
     message:
-      'Jika email ini terdaftar pada pembelian aktif, kode lisensi sudah dikirim ulang ke inbox/spam Anda.',
+      'Jika email ini terdaftar pada pembelian aktif, kode lisensi sudah dikirim ulang. Cek Inbox, tab Promosi, atau Spam Anda.',
   });
 }

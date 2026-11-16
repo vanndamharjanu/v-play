@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { hmacSha256Hex, sha256Hex } from '../functions/_lib/license.js';
+import { hmacSha256Hex, sha256Hex, sendLicenseEmail } from '../functions/_lib/license.js';
 import { onRequestPost as webhookHandler } from '../functions/api/webhook/lynk.js';
 import { onRequestPost as activateHandler } from '../functions/api/license/activate.js';
 import { onRequestGet as catalogHandler } from '../functions/api/catalog.js';
@@ -303,4 +303,31 @@ test('webhook acknowledges unsigned Lynk test_event ping safely without creating
     {}
   );
   assert.equal(unsignedPay.status, 401);
+});
+
+test('sendLicenseEmail builds clean transactional text and html payload without promo buttons', async () => {
+  const prevFetch = globalThis.fetch;
+  let captured = null;
+  globalThis.fetch = async (url, init) => {
+    captured = { url, body: JSON.parse(init.body) };
+    return new Response(JSON.stringify({ id: 'email_1' }), { status: 200 });
+  };
+  try {
+    const res = await sendLicenseEmail({
+      apiKey: 're_test',
+      fromEmail: 'FunPlay <halo@funplay.web.id>',
+      toEmail: 'budi@example.com',
+      name: 'Budi',
+      code: 'FP-ABCD-1234-EFGH',
+      appUrl: 'https://funplay.web.id/',
+      maxDevices: 3,
+    });
+    assert.equal(res.sent, true);
+    assert.equal(captured.url, 'https://api.resend.com/emails');
+    assert.ok(captured.body.text.includes('FP-ABCD-1234-EFGH'));
+    assert.ok(captured.body.html.includes('FP-ABCD-1234-EFGH'));
+    assert.ok(!captured.body.html.includes('#86DC62'));
+  } finally {
+    globalThis.fetch = prevFetch;
+  }
 });
