@@ -266,3 +266,41 @@ test('webhook accepts nested message_data.message_id, sha256= prefix, and trimme
   const row = DB.sqlite.prepare('SELECT code FROM licenses WHERE ref_id = ?').get('LYNK-REF-NESTED');
   assert.ok(row && row.code.startsWith('FP-'));
 });
+
+test('webhook acknowledges unsigned Lynk test_event ping safely without creating any license', async () => {
+  const DB = createMockD1();
+  const env = { DB, LYNK_MERCHANT_KEY: 'test_merchant_secret_123' };
+
+  const testPing = await worker.fetch(
+    new Request('https://funplay.workers.dev/api/webhook/lynk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'test_event',
+        data: { message: 'This is a test webhook', timestamp: 1794813632604 },
+      }),
+    }),
+    env,
+    {}
+  );
+  assert.equal(testPing.status, 200);
+  const testJson = await testPing.json();
+  assert.equal(testJson.ok, true);
+  assert.equal(testJson.test, true);
+  assert.equal(DB.sqlite.prepare('SELECT COUNT(*) AS c FROM licenses').get().c, 0);
+
+  // Unsigned payment events are still strictly blocked with 401
+  const unsignedPay = await worker.fetch(
+    new Request('https://funplay.workers.dev/api/webhook/lynk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'payment.received',
+        data: { message_data: { refId: 'FAKE', customer: { email: 'hacker@example.com' } } },
+      }),
+    }),
+    env,
+    {}
+  );
+  assert.equal(unsignedPay.status, 401);
+});

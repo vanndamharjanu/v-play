@@ -106,11 +106,23 @@ export function extractLynkOrder(payload) {
 
   const items = Array.isArray(msgData?.items) ? msgData.items : [];
   const productName = String(
-    data?.product?.name || items[0]?.title || items[0]?.name || data?.product_name || ''
+    data?.product?.name ||
+      items[0]?.title ||
+      items[0]?.name ||
+      items[0]?.productName ||
+      data?.product_name ||
+      ''
   ).trim();
 
   const refId = String(
-    msgData?.refId || data?.refId || data?.reference || data?.message_id || ''
+    msgData?.refId ||
+      msgData?.ref_id ||
+      data?.refId ||
+      data?.ref_id ||
+      data?.reference ||
+      data?.message_id ||
+      msgData?.message_id ||
+      ''
   ).trim();
 
   const amountRaw =

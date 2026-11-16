@@ -21,6 +21,21 @@ export async function onRequestPost(context) {
     return jsonResponse({ ok: false, error: 'Payload JSON tidak valid.' }, 400);
   }
 
+  // Lynk.id "Test URL" sends event="test_event" without a signature header;
+  // acknowledge reachability safely without ever generating or modifying licenses.
+  if (String(payload?.event || '').toLowerCase() === 'test_event') {
+    try {
+      await env.DB.prepare(
+        'INSERT INTO webhook_logs (event_name, ref_id, customer_email, payload_json) VALUES (?, ?, ?, ?)'
+      )
+        .bind('test_event', null, null, rawBody.slice(0, 1500))
+        .run();
+    } catch {
+      // Non-fatal diagnostic log.
+    }
+    return jsonResponse({ ok: true, test: true, message: 'Webhook endpoint FunPlay siap.' });
+  }
+
   const signature =
     request.headers.get('x-lynk-signature') ||
     request.headers.get('x-signature') ||
