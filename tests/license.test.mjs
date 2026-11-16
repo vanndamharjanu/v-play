@@ -305,7 +305,7 @@ test('webhook acknowledges unsigned Lynk test_event ping safely without creating
   assert.equal(unsignedPay.status, 401);
 });
 
-test('sendLicenseEmail builds clean transactional text and html payload without promo buttons', async () => {
+test('sendLicenseEmail builds branded card html and plain text payload', async () => {
   const prevFetch = globalThis.fetch;
   let captured = null;
   globalThis.fetch = async (url, init) => {
@@ -326,7 +326,7 @@ test('sendLicenseEmail builds clean transactional text and html payload without 
     assert.equal(captured.url, 'https://api.resend.com/emails');
     assert.ok(captured.body.text.includes('FP-ABCD-1234-EFGH'));
     assert.ok(captured.body.html.includes('FP-ABCD-1234-EFGH'));
-    assert.ok(!captured.body.html.includes('#86DC62'));
+    assert.ok(captured.body.html.includes('#86DC62') && captured.body.html.includes('#EAF9FC'));
   } finally {
     globalThis.fetch = prevFetch;
   }
