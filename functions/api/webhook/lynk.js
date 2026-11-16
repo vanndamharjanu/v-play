@@ -22,7 +22,11 @@ export async function onRequestPost(context) {
   }
 
   const signature =
-    request.headers.get('x-lynk-signature') || request.headers.get('x-signature') || '';
+    request.headers.get('x-lynk-signature') ||
+    request.headers.get('x-signature') ||
+    request.headers.get('x-webhook-signature') ||
+    request.headers.get('signature') ||
+    '';
   const validSig = await verifyLynkSignature({
     rawBody,
     payload,
@@ -31,6 +35,23 @@ export async function onRequestPost(context) {
   });
 
   if (!validSig) {
+    const diag = {
+      headerNames: [...request.headers.keys()],
+      hasSignatureHeader: Boolean(signature),
+      signatureLength: signature.length,
+      event: payload?.event || null,
+      rawPreview: rawBody.slice(0, 1500),
+    };
+    console.warn('Webhook invalid signature', diag.headerNames, diag.hasSignatureHeader, diag.signatureLength);
+    try {
+      await env.DB.prepare(
+        'INSERT INTO webhook_logs (event_name, ref_id, customer_email, payload_json) VALUES (?, ?, ?, ?)'
+      )
+        .bind('invalid_signature', null, null, JSON.stringify(diag))
+        .run();
+    } catch {
+      // Do not mask 401 response if diagnostic logging fails.
+    }
     return jsonResponse({ ok: false, error: 'Signature webhook tidak valid.' }, 401);
   }
 

@@ -84,7 +84,7 @@ test('webhook verifies signature, generates idempotent license code, activates u
   };
   const rawBody = JSON.stringify(payloadObj);
 
-  // Invalid signature rejected with 401
+  // Invalid signature rejected with 401 and logged cleanly for diagnostics
   const badRes = await webhookHandler({
     request: new Request('https://funplay.workers.dev/api/webhook/lynk', {
       method: 'POST',
@@ -94,6 +94,10 @@ test('webhook verifies signature, generates idempotent license code, activates u
     env,
   });
   assert.equal(badRes.status, 401);
+  const badLog = DB.sqlite
+    .prepare("SELECT event_name, payload_json FROM webhook_logs WHERE event_name = 'invalid_signature' LIMIT 1")
+    .get();
+  assert.ok(badLog && JSON.parse(badLog.payload_json).hasSignatureHeader === true);
 
   // Valid HMAC-SHA256 raw body signature creates license
   const validSig = await hmacSha256Hex(env.LYNK_MERCHANT_KEY, rawBody);
@@ -232,4 +236,33 @@ test('worker entrypoint routes API endpoints, rejects unknown methods/paths, and
   assert.equal(assetRes.status, 200);
   assert.equal(await assetRes.text(), 'asset-ok');
   assert.deepEqual(assetCalls, ['/index.html']);
+});
+
+test('webhook accepts nested message_data.message_id, sha256= prefix, and trimmed merchant key', async () => {
+  const DB = createMockD1();
+  const key = 'test_merchant_secret_123';
+  const payload = JSON.stringify({
+    event: 'payment.received',
+    data: {
+      message_data: {
+        message_id: 'msg_nested_1',
+        refId: 'LYNK-REF-NESTED',
+        totals: { grandTotal: 49000 },
+        customer: { name: 'Sari', email: 'sari@example.com' },
+      },
+    },
+  });
+  const sig = await sha256Hex(`49000LYNK-REF-NESTEDmsg_nested_1${key}`);
+  const res = await worker.fetch(
+    new Request('https://funplay.workers.dev/api/webhook/lynk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-webhook-signature': `sha256=${sig}` },
+      body: payload,
+    }),
+    { DB, LYNK_MERCHANT_KEY: `  ${key}\n` },
+    {}
+  );
+  assert.equal(res.status, 200);
+  const row = DB.sqlite.prepare('SELECT code FROM licenses WHERE ref_id = ?').get('LYNK-REF-NESTED');
+  assert.ok(row && row.code.startsWith('FP-'));
 });

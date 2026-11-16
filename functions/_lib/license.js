@@ -36,8 +36,8 @@ export async function hmacSha256Hex(secret, message) {
 }
 
 export function timingSafeEqualHex(a, b) {
-  const s1 = String(a || '').trim().toLowerCase();
-  const s2 = String(b || '').trim().toLowerCase();
+  const s1 = String(a || '').trim().toLowerCase().replace(/^sha256=/, '');
+  const s2 = String(b || '').trim().toLowerCase().replace(/^sha256=/, '');
   if (!s1 || s1.length !== s2.length) return false;
   let diff = 0;
   for (let i = 0; i < s1.length; i++) {
@@ -51,19 +51,39 @@ export function timingSafeEqualHex(a, b) {
  * or SHA256(grandTotal + refId + message_id + merchantKey).
  */
 export async function verifyLynkSignature({ rawBody, payload, signatureHeader, merchantKey }) {
-  if (!signatureHeader || !merchantKey) return false;
+  const key = String(merchantKey || '').trim();
+  if (!signatureHeader || !key) return false;
 
-  const rawHmac = await hmacSha256Hex(merchantKey, rawBody);
+  const rawHmac = await hmacSha256Hex(key, rawBody);
   if (timingSafeEqualHex(rawHmac, signatureHeader)) return true;
 
   const data = payload?.data || {};
+  const msgData = data?.message_data || {};
   const grandTotal =
-    data?.message_data?.totals?.grandTotal ?? data?.totals?.grandTotal ?? '';
-  const refId = data?.message_data?.refId ?? data?.refId ?? data?.reference ?? '';
-  const messageId = data?.message_id ?? payload?.message_id ?? '';
+    msgData?.totals?.grandTotal ??
+    data?.totals?.grandTotal ??
+    payload?.totals?.grandTotal ??
+    payload?.grandTotal ??
+    data?.amount ??
+    payload?.amount ??
+    '';
+  const refId =
+    msgData?.refId ??
+    msgData?.ref_id ??
+    data?.refId ??
+    data?.ref_id ??
+    data?.reference ??
+    payload?.refId ??
+    payload?.ref_id ??
+    '';
+  const messageId =
+    data?.message_id ??
+    msgData?.message_id ??
+    payload?.message_id ??
+    '';
 
   if (grandTotal !== '' && refId && messageId) {
-    const legacyDigest = await sha256Hex(`${grandTotal}${refId}${messageId}${merchantKey}`);
+    const legacyDigest = await sha256Hex(`${grandTotal}${refId}${messageId}${key}`);
     if (timingSafeEqualHex(legacyDigest, signatureHeader)) return true;
   }
 
