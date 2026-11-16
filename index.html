@@ -8,8 +8,8 @@
   <meta name="description"
     content="Aplikasi main dan belajar bahasa Inggris dasar untuk anak usia 1-5 tahun dengan ilustrasi buku cerita dan suara hangat.">
   <link rel="icon" type="image/svg+xml"
-    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23C2451C'/%3E%3Cpolygon points='12,9 24,16 12,23' fill='%23FFFDF8'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./styles.css?v=3">
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%23007C91'/%3E%3Cpolygon points='12,9 23,16 12,23' fill='%2386DC62'/%3E%3Ccircle cx='24' cy='8' r='3' fill='%23F472B0'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css?v=6">
 </head>
 
 <body>
@@ -19,9 +19,10 @@
     <div class="container topbar-inner">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <rect x="2" y="2" width="24" height="24" rx="7" fill="#C2451C" />
-            <path d="M11 9.5L20 14L11 18.5V9.5Z" fill="#FFFDF8" />
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect x="2" y="2" width="28" height="28" rx="10" fill="#007C91" />
+            <polygon points="12,10 22,16 12,22" fill="#86DC62" />
+            <circle cx="24.5" cy="7.5" r="3" fill="#F472B0" />
           </svg>
         </span>
         <span class="brand-copy">
@@ -43,43 +44,93 @@
   </header>
 
   <main id="main-content" class="container main-wrap" tabindex="-1">
-    <section class="intro-bar" aria-labelledby="page-title">
-      <div class="intro-copy">
-        <h1 id="page-title" class="page-title">Main &amp; belajar bahasa Inggris</h1>
-        <p id="mode-hint" class="page-subtitle">Sentuh gambar untuk mendengar pelafalan katanya.</p>
-      </div>
+    <section id="intro-bar" class="intro-bar" aria-labelledby="page-title">
+      <button type="button" id="menu-collapse-btn" class="btn-secondary menu-collapse-btn"
+        aria-expanded="true" aria-controls="intro-collapsible">
+        <span class="menu-collapse-left">
+          <span class="menu-collapse-dot" aria-hidden="true"></span>
+          <span>Permainan: <strong id="menu-active-label">Sentuh &amp; Dengar</strong></span>
+        </span>
+        <span id="menu-collapse-action" class="menu-collapse-action">Tutup menu</span>
+      </button>
 
-      <div class="mode-tabs" role="tablist" aria-label="Pilih cara bermain">
-        <button type="button" role="tab" id="tab-explore" class="mode-tab" aria-selected="true"
-          aria-controls="panel-explore" tabindex="0">
-          <span class="tab-title">Sentuh &amp; Dengar</span>
-          <span class="tab-age">Usia 1-2 tahun</span>
-        </button>
-        <button type="button" role="tab" id="tab-quiz" class="mode-tab" aria-selected="false" aria-controls="panel-quiz"
-          tabindex="-1">
-          <span class="tab-title">Tebak Gambar</span>
-          <span class="tab-age">Usia 3-5 tahun</span>
-        </button>
-        <button type="button" role="tab" id="tab-puzzle" class="mode-tab" aria-selected="false"
-          aria-controls="panel-puzzle" tabindex="-1">
-          <span class="tab-title">Puzzle</span>
-          <span class="tab-age">Usia 1-5 tahun</span>
-        </button>
-        <button type="button" role="tab" id="tab-memory" class="mode-tab" aria-selected="false"
-          aria-controls="panel-games" tabindex="-1">
-          <span class="tab-title">Kartu Memori</span>
-          <span class="tab-age">Usia 2-5 tahun</span>
-        </button>
-        <button type="button" role="tab" id="tab-counting" class="mode-tab" aria-selected="false"
-          aria-controls="panel-games" tabindex="-1">
-          <span class="tab-title">Hitung Gambar</span>
-          <span class="tab-age">Usia 1-5 tahun</span>
-        </button>
-        <button type="button" role="tab" id="tab-odd" class="mode-tab" aria-selected="false"
-          aria-controls="panel-games" tabindex="-1">
-          <span class="tab-title">Cari yang Berbeda</span>
-          <span class="tab-age">Usia 2-5 tahun</span>
-        </button>
+      <div id="intro-collapsible" class="intro-collapsible">
+        <div class="intro-copy">
+          <h1 id="page-title" class="page-title">Main &amp; belajar bahasa Inggris</h1>
+          <p id="mode-hint" class="page-subtitle">Sentuh gambar untuk mendengar pelafalan katanya.</p>
+        </div>
+
+        <div class="mode-tabs" role="tablist" aria-label="Pilih cara bermain">
+          <button type="button" role="tab" id="tab-explore" class="mode-tab" data-tone="cyan" aria-selected="true"
+            aria-controls="panel-explore" tabindex="0">
+            <span class="tab-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <polygon points="5,9 9,9 14,5 14,19 9,15 5,15" fill="#007C91" />
+                <path d="M16.5 8.5a4.5 4.5 0 0 1 0 7M19 6a8 8 0 0 1 0 12" stroke="#007C91" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </span>
+            <span class="tab-title">Sentuh &amp; Dengar</span>
+            <span class="tab-age">Usia 1-2 tahun</span>
+          </button>
+          <button type="button" role="tab" id="tab-quiz" class="mode-tab" data-tone="pink" aria-selected="false"
+            aria-controls="panel-quiz" tabindex="-1">
+            <span class="tab-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="4" y="4" width="16" height="16" rx="4" fill="#F472B0" fill-opacity="0.22" stroke="#B8296B" stroke-width="1.9" />
+                <circle cx="9.5" cy="9.5" r="1.8" fill="#B8296B" />
+                <path d="M5.5 17l4.2-4.2 3 3 2.3-2.3 3.5 3.5" stroke="#B8296B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+            <span class="tab-title">Tebak Gambar</span>
+            <span class="tab-age">Usia 3-5 tahun</span>
+          </button>
+          <button type="button" role="tab" id="tab-puzzle" class="mode-tab" data-tone="green" aria-selected="false"
+            aria-controls="panel-puzzle" tabindex="-1">
+            <span class="tab-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M6 7h4a2 2 0 1 1 4 0h4v4a2 2 0 1 1 0 4v4H6v-4a2 2 0 1 0 0-4V7z" fill="#86DC62" fill-opacity="0.35" stroke="#1F6815" stroke-width="1.8" stroke-linejoin="round" />
+              </svg>
+            </span>
+            <span class="tab-title">Puzzle</span>
+            <span class="tab-age">Usia 1-5 tahun</span>
+          </button>
+          <button type="button" role="tab" id="tab-memory" class="mode-tab" data-tone="pink" aria-selected="false"
+            aria-controls="panel-games" tabindex="-1">
+            <span class="tab-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="4" y="6" width="10" height="13" rx="3" fill="#FFFFFF" stroke="#B8296B" stroke-width="1.9" />
+                <rect x="10" y="4" width="10" height="13" rx="3" fill="#FFE6F2" stroke="#B8296B" stroke-width="1.9" />
+                <circle cx="15" cy="10.5" r="2.2" fill="#F472B0" />
+              </svg>
+            </span>
+            <span class="tab-title">Kartu Memori</span>
+            <span class="tab-age">Usia 2-5 tahun</span>
+          </button>
+          <button type="button" role="tab" id="tab-counting" class="mode-tab" data-tone="green" aria-selected="false"
+            aria-controls="panel-games" tabindex="-1">
+            <span class="tab-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="4" y="13" width="7" height="7" rx="2" fill="#86DC62" fill-opacity="0.45" stroke="#1F6815" stroke-width="1.8" />
+                <rect x="13" y="13" width="7" height="7" rx="2" fill="#D9F6FA" stroke="#007C91" stroke-width="1.8" />
+                <rect x="8.5" y="4" width="7" height="7" rx="2" fill="#FFE6F2" stroke="#B8296B" stroke-width="1.8" />
+              </svg>
+            </span>
+            <span class="tab-title">Hitung Gambar</span>
+            <span class="tab-age">Usia 1-5 tahun</span>
+          </button>
+          <button type="button" role="tab" id="tab-odd" class="mode-tab" data-tone="cyan" aria-selected="false"
+            aria-controls="panel-games" tabindex="-1">
+            <span class="tab-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="7.5" cy="15.5" r="3.5" fill="#D9F6FA" stroke="#007C91" stroke-width="1.8" />
+                <circle cx="16.5" cy="15.5" r="3.5" fill="#D9F6FA" stroke="#007C91" stroke-width="1.8" />
+                <polygon points="12,3.5 14,7.5 18.2,8.1 15.1,11 15.8,15.2 12,13.2 8.2,15.2 8.9,11 5.8,8.1 10,7.5" fill="#F472B0" stroke="#B8296B" stroke-width="1.5" stroke-linejoin="round" />
+              </svg>
+            </span>
+            <span class="tab-title">Cari yang Berbeda</span>
+            <span class="tab-age">Usia 2-5 tahun</span>
+          </button>
+        </div>
       </div>
     </section>
 
@@ -117,6 +168,7 @@
           </span>
           <span class="spotlight-labels">
             <span id="spotlight-word" class="spotlight-word" lang="en">Elephant</span>
+            <span id="spotlight-pronun" class="spotlight-pronun">(EL-uh-funt)</span>
             <span id="spotlight-indo" class="spotlight-indo">gajah</span>
           </span>
         </button>
@@ -188,13 +240,23 @@
 
         <div id="quiz-feedback" class="quiz-feedback" hidden>
           <p id="quiz-feedback-text" class="quiz-feedback-text"></p>
-          <button type="button" id="quiz-next-btn" class="btn-primary btn-toddler" hidden>Lanjut</button>
+          <button type="button" id="quiz-next-btn" class="btn-primary btn-next btn-toddler" hidden>Lanjut</button>
         </div>
       </div>
 
       <div id="quiz-complete" class="quiz-complete" hidden>
-        <h2 class="complete-title">Hebat, selesai 5 gambar</h2>
-        <p class="complete-subtitle">Sentuh kata di bawah untuk mendengar lagi, atau mainkan ronde baru.</p>
+        <div class="complete-hero">
+          <span class="complete-badge" aria-hidden="true">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="22" fill="#E4F7D9" stroke="#86DC62" stroke-width="2.5"/>
+              <polygon points="24,10 27.6,18.2 36.5,19.1 29.8,25.1 31.7,33.8 24,29.2 16.3,33.8 18.2,25.1 11.5,19.1 20.4,18.2" fill="#F472B0" stroke="#B8296B" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <div>
+            <h2 class="complete-title">Hebat, selesai 5 gambar</h2>
+            <p class="complete-subtitle">Sentuh gambar di bawah untuk mendengar lagi, atau mainkan ronde baru.</p>
+          </div>
+        </div>
         <div id="complete-words" class="complete-words"></div>
         <div class="complete-actions">
           <button type="button" id="quiz-restart-btn" class="btn-primary btn-toddler">Main lagi</button>
@@ -266,7 +328,7 @@
 
         <div id="puzzle-feedback" class="quiz-feedback" hidden>
           <p id="puzzle-feedback-text" class="quiz-feedback-text"></p>
-          <button type="button" id="puzzle-next-btn" class="btn-primary btn-toddler" hidden>Lanjut</button>
+          <button type="button" id="puzzle-next-btn" class="btn-primary btn-next btn-toddler" hidden>Lanjut</button>
         </div>
       </div>
 
@@ -276,8 +338,18 @@
       </div>
 
       <div id="puzzle-complete" class="quiz-complete" hidden>
-        <h2 id="puzzle-complete-title" class="complete-title">Hebat, selesai 3 puzzle</h2>
-        <p class="complete-subtitle">Sentuh kata di bawah untuk mendengar lagi, atau mainkan ronde baru.</p>
+        <div class="complete-hero">
+          <span class="complete-badge" aria-hidden="true">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="22" fill="#D9F6FA" stroke="#34C5D9" stroke-width="2.5"/>
+              <polygon points="24,10 27.6,18.2 36.5,19.1 29.8,25.1 31.7,33.8 24,29.2 16.3,33.8 18.2,25.1 11.5,19.1 20.4,18.2" fill="#86DC62" stroke="#1F6815" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <div>
+            <h2 id="puzzle-complete-title" class="complete-title">Hebat, selesai 3 puzzle</h2>
+            <p class="complete-subtitle">Sentuh gambar di bawah untuk mendengar lagi, atau mainkan ronde baru.</p>
+          </div>
+        </div>
         <div id="puzzle-complete-words" class="complete-words"></div>
         <div class="complete-actions">
           <button type="button" id="puzzle-restart-btn" class="btn-primary btn-toddler">Main lagi</button>
@@ -336,7 +408,7 @@
 
         <div id="games-feedback" class="quiz-feedback" hidden>
           <p id="games-feedback-text" class="quiz-feedback-text"></p>
-          <button type="button" id="games-next-btn" class="btn-primary btn-toddler" hidden>Lanjut</button>
+          <button type="button" id="games-next-btn" class="btn-primary btn-next btn-toddler" hidden>Lanjut</button>
         </div>
       </div>
 
@@ -346,8 +418,18 @@
       </div>
 
       <div id="games-complete" class="quiz-complete" hidden>
-        <h2 id="games-complete-title" class="complete-title">Hebat, selesai!</h2>
-        <p class="complete-subtitle">Sentuh kata di bawah untuk mendengar lagi, atau mainkan ronde baru.</p>
+        <div class="complete-hero">
+          <span class="complete-badge" aria-hidden="true">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="22" fill="#FFE6F2" stroke="#F472B0" stroke-width="2.5"/>
+              <polygon points="24,10 27.6,18.2 36.5,19.1 29.8,25.1 31.7,33.8 24,29.2 16.3,33.8 18.2,25.1 11.5,19.1 20.4,18.2" fill="#34C5D9" stroke="#005B6B" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <div>
+            <h2 id="games-complete-title" class="complete-title">Hebat, selesai!</h2>
+            <p class="complete-subtitle">Sentuh gambar di bawah untuk mendengar lagi, atau mainkan ronde baru.</p>
+          </div>
+        </div>
         <div id="games-complete-words" class="complete-words"></div>
         <div class="complete-actions">
           <button type="button" id="games-restart-btn" class="btn-primary btn-toddler">Main lagi</button>
@@ -363,7 +445,7 @@
     </div>
   </footer>
 
-  <script type="module" src="./app.js?v=6"></script>
+  <script type="module" src="./app.js?v=9"></script>
 </body>
 
 </html>

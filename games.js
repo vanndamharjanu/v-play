@@ -12,6 +12,9 @@ export function createGamesController({
   getFilteredWords,
   announce,
   setLastAudioAction,
+  focusStage,
+  revealFeedback,
+  renderCompleteWords,
   onSwitchExplore,
   onResetCategory,
 }) {
@@ -94,6 +97,7 @@ export function createGamesController({
       els.nextBtn.textContent =
         nextLabel || (gState.index + 1 >= gState.round.length ? 'Lihat hasil' : 'Lanjut');
     }
+    if (revealFeedback) revealFeedback(els.feedback);
   }
 
   function playWord(item, chime = 'tap') {
@@ -433,17 +437,7 @@ export function createGamesController({
       odd: `Hebat, selesai ${summaryWords.length} soal`,
     };
     els.completeTitle.textContent = titles[gState.mode];
-    els.completeWords.innerHTML = '';
-
-    for (const w of summaryWords) {
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'complete-chip';
-      chip.lang = 'en';
-      chip.textContent = `${w.word} (${w.indo})`;
-      chip.addEventListener('click', () => playWord(w, 'tap'));
-      els.completeWords.appendChild(chip);
-    }
+    renderCompleteWords(els.completeWords, summaryWords, (w) => playWord(w, 'tap'));
     announce(titles[gState.mode]);
   }
 
@@ -545,14 +539,17 @@ export function createGamesController({
   els.nextBtn.addEventListener('click', () => {
     if (gState.mode === 'memory') {
       renderComplete();
+      if (focusStage) focusStage(els.complete);
       return;
     }
     gState.index++;
     renderQuestion({ autoPlay: true });
+    if (focusStage) focusStage(els.stage.hidden ? els.complete : els.stage);
   });
 
   els.restartBtn.addEventListener('click', () => {
     startRound(gState.mode, { autoPlay: true });
+    if (focusStage) focusStage(els.stage);
   });
 
   els.backExploreBtn.addEventListener('click', () => {

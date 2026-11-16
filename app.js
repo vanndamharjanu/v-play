@@ -19,6 +19,10 @@ const state = {
 };
 
 const els = {
+  introBar: document.getElementById('intro-bar'),
+  menuCollapseBtn: document.getElementById('menu-collapse-btn'),
+  menuActiveLabel: document.getElementById('menu-active-label'),
+  menuCollapseAction: document.getElementById('menu-collapse-action'),
   soundToggle: document.getElementById('sound-toggle'),
   soundToggleLabel: document.getElementById('sound-toggle-label'),
   tabExplore: document.getElementById('tab-explore'),
@@ -45,6 +49,7 @@ const els = {
   spotlightCard: document.getElementById('spotlight-card'),
   spotlightImg: document.getElementById('spotlight-img'),
   spotlightWord: document.getElementById('spotlight-word'),
+  spotlightPronun: document.getElementById('spotlight-pronun'),
   spotlightIndo: document.getElementById('spotlight-indo'),
   spotlightPrev: document.getElementById('spotlight-prev'),
   spotlightPlay: document.getElementById('spotlight-play'),
@@ -157,8 +162,34 @@ function renderCategories() {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'category-chip';
-    btn.textContent = cat.label;
     btn.setAttribute('aria-pressed', String(state.category === cat.id));
+
+    const thumb = document.createElement('span');
+    thumb.className = 'cat-thumb';
+    thumb.setAttribute('aria-hidden', 'true');
+    if (cat.thumb) {
+      const img = document.createElement('img');
+      img.src = cat.thumb;
+      img.alt = '';
+      img.width = 512;
+      img.height = 512;
+      img.decoding = 'async';
+      thumb.appendChild(img);
+    } else {
+      thumb.innerHTML =
+        '<svg width="18" height="18" viewBox="0 0 20 20" fill="none">' +
+        '<rect x="2" y="2" width="7" height="7" rx="2.5" fill="#34C5D9"/>' +
+        '<rect x="11" y="2" width="7" height="7" rx="2.5" fill="#F472B0"/>' +
+        '<rect x="2" y="11" width="7" height="7" rx="2.5" fill="#86DC62"/>' +
+        '<rect x="11" y="11" width="7" height="7" rx="2.5" fill="#FFD166"/>' +
+        '</svg>';
+    }
+
+    const label = document.createElement('span');
+    label.className = 'cat-label';
+    label.textContent = cat.label;
+
+    btn.append(thumb, label);
     btn.addEventListener('click', () => {
       state.category = cat.id;
       state.spotlightIndex = 0;
@@ -190,6 +221,7 @@ function renderExplore() {
     els.spotlightImg.src = current.image;
     els.spotlightImg.alt = `${current.word} (${current.indo})`;
     els.spotlightWord.textContent = current.word;
+    els.spotlightPronun.textContent = `(${current.pronun})`;
     els.spotlightIndo.textContent = current.indo;
     els.spotlightCard.setAttribute('aria-label', `Dengarkan kata ${current.word}`);
     updatePlayingHighlights();
@@ -232,11 +264,15 @@ function renderExplore() {
     wordSpan.lang = 'en';
     wordSpan.textContent = item.word;
 
+    const pronunSpan = document.createElement('span');
+    pronunSpan.className = 'card-pronun';
+    pronunSpan.textContent = `(${item.pronun})`;
+
     const indoSpan = document.createElement('span');
     indoSpan.className = 'card-indo';
     indoSpan.textContent = item.indo;
 
-    card.append(tag, art, wordSpan, indoSpan);
+    card.append(tag, art, wordSpan, pronunSpan, indoSpan);
     card.addEventListener('click', () => playWordClip(item));
     els.exploreGrid.appendChild(card);
   });
@@ -336,6 +372,7 @@ function handleQuizChoice(picked, target) {
     els.quizNextBtn.textContent =
       state.quizIndex + 1 >= state.quizRound.length ? 'Lihat hasil' : 'Lanjut';
     announce(`Benar, itu gambar ${target.word}`);
+    revealFeedback(els.quizFeedback);
     return;
   }
 
@@ -356,23 +393,59 @@ function handleQuizChoice(picked, target) {
   els.quizFeedbackText.textContent = `Itu gambar ${picked.word} (${picked.indo}). Coba cari gambar yang disebut suara.`;
   els.quizNextBtn.hidden = true;
   announce(`Belum tepat, itu ${picked.word}. Coba lagi.`);
+  revealFeedback(els.quizFeedback);
+}
+
+function renderCompleteWords(container, words, onSpeak) {
+  container.innerHTML = '';
+  for (const w of words) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'complete-chip';
+    chip.setAttribute('aria-label', `${w.word}, ${w.indo}. Ketuk untuk mendengar lagi`);
+
+    const art = document.createElement('span');
+    art.className = 'complete-chip-art';
+    art.setAttribute('aria-hidden', 'true');
+    const img = document.createElement('img');
+    img.src = w.image;
+    img.alt = '';
+    img.width = 512;
+    img.height = 512;
+    img.decoding = 'async';
+    art.appendChild(img);
+
+    const copy = document.createElement('span');
+    copy.className = 'complete-chip-copy';
+
+    const wordEl = document.createElement('span');
+    wordEl.className = 'complete-chip-word';
+    wordEl.lang = 'en';
+    wordEl.textContent = w.word;
+
+    const pronunEl = document.createElement('span');
+    pronunEl.className = 'complete-chip-pronun';
+    pronunEl.textContent = `(${w.pronun})`;
+
+    const indoEl = document.createElement('span');
+    indoEl.className = 'complete-chip-indo';
+    indoEl.textContent = w.indo;
+
+    copy.append(wordEl, pronunEl, indoEl);
+    chip.append(art, copy);
+    chip.addEventListener('click', () => onSpeak(w));
+    container.appendChild(chip);
+  }
 }
 
 function renderQuizComplete() {
   els.quizStage.hidden = true;
   els.quizComplete.hidden = false;
-  els.completeWords.innerHTML = '';
-
-  for (const roundItem of state.quizRound) {
-    const w = roundItem.target;
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'complete-chip';
-    chip.lang = 'en';
-    chip.textContent = `${w.word} (${w.indo})`;
-    chip.addEventListener('click', () => playWordClip(w));
-    els.completeWords.appendChild(chip);
-  }
+  renderCompleteWords(
+    els.completeWords,
+    state.quizRound.map((roundItem) => roundItem.target),
+    playWordClip
+  );
   announce('Hebat, selesai 5 gambar');
 }
 
@@ -386,6 +459,47 @@ function renderActiveMode({ autoPlay = false } = {}) {
   } else if (games) {
     games.startRound(state.mode, { autoPlay });
   }
+}
+
+const MODE_LABELS = {
+  explore: 'Sentuh & Dengar',
+  quiz: 'Tebak Gambar',
+  puzzle: 'Puzzle',
+  memory: 'Kartu Memori',
+  counting: 'Hitung Gambar',
+  odd: 'Cari yang Berbeda',
+};
+
+function setMenuCollapsed(collapsed) {
+  els.introBar.classList.toggle('is-menu-collapsed', collapsed);
+  els.menuCollapseBtn.setAttribute('aria-expanded', String(!collapsed));
+  els.menuCollapseAction.textContent = collapsed ? 'Ganti menu' : 'Tutup menu';
+}
+
+function focusStage(stageEl) {
+  if (!stageEl || stageEl.hidden || typeof stageEl.getBoundingClientRect !== 'function') return;
+  const rect = stageEl.getBoundingClientRect();
+  const vh = window.innerHeight || 800;
+  if (rect.top < 8 || rect.top > vh * 0.55) {
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (typeof stageEl.scrollIntoView === 'function') {
+      stageEl.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    }
+  }
+}
+
+function revealFeedback(feedbackEl) {
+  if (!feedbackEl || feedbackEl.hidden || typeof feedbackEl.getBoundingClientRect !== 'function') return;
+  requestAnimationFrame(() => {
+    const rect = feedbackEl.getBoundingClientRect();
+    const vh = window.innerHeight || 800;
+    if (rect.bottom > vh - 8 || rect.top < 8) {
+      const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      if (typeof feedbackEl.scrollIntoView === 'function') {
+        feedbackEl.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
+      }
+    }
+  });
 }
 
 function setMode(nextMode) {
@@ -427,8 +541,16 @@ function setMode(nextMode) {
     odd: 'Temukan satu gambar yang berbeda kelompok dari gambar lainnya.',
   };
   els.modeHint.textContent = hints[nextMode];
+  els.menuActiveLabel.textContent = MODE_LABELS[nextMode] || MODE_LABELS.explore;
+  // Auto-compact the 6-tab grid on mobile phones while playing a game stage.
+  setMenuCollapsed(nextMode !== 'explore');
 
   renderActiveMode({ autoPlay: nextMode !== 'explore' });
+
+  if (nextMode !== 'explore') {
+    const stageId = nextMode === 'quiz' ? 'quiz-stage' : nextMode === 'puzzle' ? 'puzzle-stage' : 'games-stage';
+    requestAnimationFrame(() => focusStage(document.getElementById(stageId)));
+  }
 }
 
 function resetCategory() {
@@ -444,6 +566,9 @@ const controllerDeps = {
   setLastAudioAction: (fn) => {
     lastAudioAction = fn;
   },
+  focusStage,
+  revealFeedback,
+  renderCompleteWords,
   onSwitchExplore: () => setMode('explore'),
   onResetCategory: resetCategory,
 };
@@ -455,6 +580,9 @@ games = createGamesController({
 });
 
 // Event bindings
+els.menuCollapseBtn.addEventListener('click', () => {
+  setMenuCollapsed(!els.introBar.classList.contains('is-menu-collapsed'));
+});
 els.soundToggle.addEventListener('click', () => {
   state.muted = !state.muted;
   audio.setMuted(state.muted);
@@ -549,10 +677,12 @@ els.quizPlayBtn.addEventListener('click', () => {
 els.quizNextBtn.addEventListener('click', () => {
   state.quizIndex++;
   renderQuizQuestion({ autoPlay: true });
+  focusStage(els.quizStage.hidden ? els.quizComplete : els.quizStage);
 });
 
 els.quizRestartBtn.addEventListener('click', () => {
   startQuizRound({ autoPlay: true });
+  focusStage(els.quizStage);
 });
 
 els.quizBackExploreBtn.addEventListener('click', () => {

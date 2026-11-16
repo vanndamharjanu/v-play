@@ -22,6 +22,7 @@ test('every word entry has unique id and points to existing image and audio file
   assert.equal(new Set(WORDS.map((w) => w.id)).size, WORDS.length);
   for (const item of WORDS) {
     assert.ok(CATEGORIES.some((c) => c.id === item.category), `unknown category ${item.category}`);
+    assert.ok(typeof item.pronun === 'string' && item.pronun.trim().length > 0, `missing pronun for ${item.id}`);
     for (const rel of [item.image, item.audioWord, item.audioPrompt, item.audioPraise]) {
       const full = path.join(rootDir, rel);
       assert.ok(fs.existsSync(full), `missing asset ${rel}`);
@@ -31,6 +32,13 @@ test('every word entry has unique id and points to existing image and audio file
   assert.ok(fs.existsSync(path.join(rootDir, getRetryAudio(1))));
   assert.ok(fs.existsSync(path.join(rootDir, getRetryAudio(2))));
   assert.ok(fs.existsSync(path.join(rootDir, PRAISE_INTRO_AUDIO)));
+  for (const cat of CATEGORIES) {
+    if (cat.thumb) {
+      const thumbPath = path.join(rootDir, cat.thumb);
+      assert.ok(fs.existsSync(thumbPath), `missing category thumb ${cat.thumb}`);
+      assert.ok(fs.statSync(thumbPath).size > 500);
+    }
+  }
 });
 
 test('every image in category subfolders is referenced in WORDS', () => {

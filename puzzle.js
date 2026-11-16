@@ -113,6 +113,9 @@ export function createPuzzleController({
   getFilteredWords,
   announce,
   setLastAudioAction,
+  focusStage,
+  revealFeedback,
+  renderCompleteWords,
   onSwitchExplore,
   onResetCategory,
 }) {
@@ -197,6 +200,7 @@ export function createPuzzleController({
       els.nextBtn.textContent =
         pState.index + 1 >= pState.round.length ? 'Lihat hasil' : 'Lanjut';
     }
+    if (revealFeedback) revealFeedback(els.feedback);
   }
 
   function clearFeedback() {
@@ -627,18 +631,11 @@ export function createPuzzleController({
     els.empty.hidden = true;
     els.complete.hidden = false;
     els.completeTitle.textContent = `Hebat, selesai ${pState.round.length} puzzle`;
-    els.completeWords.innerHTML = '';
-
-    for (const roundItem of pState.round) {
-      const w = roundItem.target;
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'complete-chip';
-      chip.lang = 'en';
-      chip.textContent = `${w.word} (${w.indo})`;
-      chip.addEventListener('click', () => playTargetAudio(w, { mode: 'word' }));
-      els.completeWords.appendChild(chip);
-    }
+    renderCompleteWords(
+      els.completeWords,
+      pState.round.map((roundItem) => roundItem.target),
+      (w) => playTargetAudio(w, { mode: 'word' })
+    );
     announce(`Hebat, selesai ${pState.round.length} puzzle`);
   }
 
@@ -738,10 +735,12 @@ export function createPuzzleController({
   els.nextBtn.addEventListener('click', () => {
     pState.index++;
     renderQuestion({ autoPlay: true });
+    if (focusStage) focusStage(els.stage.hidden ? els.complete : els.stage);
   });
 
   els.restartBtn.addEventListener('click', () => {
     startRound({ autoPlay: true });
+    if (focusStage) focusStage(els.stage);
   });
 
   els.backExploreBtn.addEventListener('click', () => {
