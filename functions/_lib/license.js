@@ -112,13 +112,13 @@ export function generateLicenseCode() {
   const bytes = new Uint8Array(12);
   crypto.getRandomValues(bytes);
   const chars = [...bytes].map((b) => CODE_ALPHABET[b % CODE_ALPHABET.length]).join('');
-  return `VP-${chars.slice(0, 4)}-${chars.slice(4, 8)}-${chars.slice(8, 12)}`;
+  return `FP-${chars.slice(0, 4)}-${chars.slice(4, 8)}-${chars.slice(8, 12)}`;
 }
 
 export function generateDeviceToken() {
   const bytes = new Uint8Array(24);
   crypto.getRandomValues(bytes);
-  return `vpt_${toHex(bytes)}`;
+  return `fpt_${toHex(bytes)}`;
 }
 
 export function normalizeCode(input) {
@@ -154,17 +154,17 @@ export async function sendLicenseEmail({ apiKey, fromEmail, toEmail, name, code,
   }
   const safeName = escapeHtml(name || 'Orang Tua Hebat');
   const safeCode = escapeHtml(code);
-  const safeUrl = escapeHtml(appUrl || 'https://v-play.pages.dev');
+  const safeUrl = escapeHtml(appUrl || 'https://funplay.workers.dev');
 
   const html = `
     <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1B282C;line-height:1.5">
-      <h2 style="color:#007C91">Kode Akses Penuh v-play</h2>
-      <p>Halo ${safeName}, terima kasih sudah mendukung belajar bahasa Inggris bersama <strong>v-play</strong>!</p>
+      <h2 style="color:#007C91">Kode Akses Penuh FunPlay</h2>
+      <p>Halo ${safeName}, terima kasih sudah mendukung belajar bahasa Inggris bersama <strong>FunPlay</strong>!</p>
       <p>Gunakan kode akses sekali bayar di bawah ini (berlaku hingga <strong>${maxDevices} perangkat</strong> keluarga):</p>
       <div style="margin:16px 0;padding:16px;border-radius:14px;background:#D9F6FA;border:2px solid #34C5D9;text-align:center;font-size:22px;font-weight:700;letter-spacing:2px;color:#005B6B">
         ${safeCode}
       </div>
-      <p><a href="${safeUrl}" style="display:inline-block;padding:12px 20px;border-radius:12px;background:#86DC62;color:#1B282C;font-weight:700;text-decoration:none">Buka v-play &amp; Aktifkan Sekarang</a></p>
+      <p><a href="${safeUrl}" style="display:inline-block;padding:12px 20px;border-radius:12px;background:#86DC62;color:#1B282C;font-weight:700;text-decoration:none">Buka FunPlay &amp; Aktifkan Sekarang</a></p>
       <p style="font-size:13px;color:#52676D">Buka link di atas, ketuk tombol <strong>Buka Semua</strong>, lalu tempel kode ini.</p>
     </div>
   `.trim();
@@ -178,7 +178,7 @@ export async function sendLicenseEmail({ apiKey, fromEmail, toEmail, name, code,
     body: JSON.stringify({
       from: fromEmail,
       to: [toEmail],
-      subject: `Kode Akses v-play Anda: ${code}`,
+      subject: `Kode Akses FunPlay Anda: ${code}`,
       html,
     }),
   });

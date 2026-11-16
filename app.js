@@ -16,8 +16,8 @@ import { AudioController } from './audio.js';
 import { createPuzzleController } from './puzzle.js';
 import { createGamesController } from './games.js';
 
-const LICENSE_STORAGE_KEY = 'vplay_license_v1';
-const DEVICE_STORAGE_KEY = 'vplay_device_v1';
+const LICENSE_STORAGE_KEY = 'funplay_license_v1';
+const DEVICE_STORAGE_KEY = 'funplay_device_v1';
 
 const state = {
   mode: 'explore', // 'explore' | 'quiz' | 'puzzle' | 'memory' | 'counting' | 'odd'
@@ -819,7 +819,7 @@ els.licenseForm.addEventListener('submit', async (e) => {
       renderCategories();
       renderActiveMode({ autoPlay: false });
     }
-    announce('Akses penuh v-play sudah aktif.');
+    announce('Akses penuh FunPlay sudah aktif.');
   } catch {
     setLicenseStatus(
       els.licenseStatus,

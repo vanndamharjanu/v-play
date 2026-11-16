@@ -1,6 +1,6 @@
-# v-play Design Direction
+# FunPlay Design Direction
 
-- **Product**: `v-play` is an English picture-word playspace for children aged 1 to 5 and the parent beside them.
+- **Product**: `FunPlay` is an English picture-word playspace for children aged 1 to 5 and the parent beside them.
 - **Character**: Playful, warm, storybook-toybox (inspired by Sago Mini's calm-yet-cheerful toddler aesthetic).
 - **World**: Soft mint-cream nursery playmat with crisp rounded toybox cards accented in light green, cyan, and pink.
 - **Moments**: Tactile picture cards with paired warm voice clips, joyful 4-note ascending chime, and pictorial icons across every menu and topic so pre-readers can navigate by sight.

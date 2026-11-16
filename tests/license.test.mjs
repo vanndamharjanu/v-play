@@ -49,7 +49,7 @@ test('webhook verifies signature, generates idempotent license code, activates u
   const env = {
     DB,
     LYNK_MERCHANT_KEY: 'test_merchant_secret_123',
-    LYNK_PRODUCT_URL: 'https://lynk.id/vplay/produk-demo',
+    LYNK_PRODUCT_URL: 'https://lynk.id/funplay/produk-demo',
     MAX_DEVICES: '3',
   };
 
@@ -57,11 +57,11 @@ test('webhook verifies signature, generates idempotent license code, activates u
   const cfgRes = await configHandler({ env });
   assert.equal(cfgRes.status, 200);
   const cfgData = await cfgRes.json();
-  assert.equal(cfgData.lynkUrl, 'https://lynk.id/vplay/produk-demo');
+  assert.equal(cfgData.lynkUrl, 'https://lynk.id/funplay/produk-demo');
 
   // Middleware hides migrations/tests/wrangler while allowing /api/*
   const blockedRes = await middlewareHandler({
-    request: new Request('https://v-play.pages.dev/migrations/0001_licenses.sql'),
+    request: new Request('https://funplay.workers.dev/migrations/0001_licenses.sql'),
     next: () => new Response('should not reach'),
   });
   assert.equal(blockedRes.status, 404);
@@ -77,7 +77,7 @@ test('webhook verifies signature, generates idempotent license code, activates u
           email: 'Budi@Example.com',
           phone: '+628123456789',
         },
-        items: [{ title: 'v-play Full Access' }],
+        items: [{ title: 'FunPlay Full Access' }],
         totals: { grandTotal: 49000 },
       },
     },
@@ -86,7 +86,7 @@ test('webhook verifies signature, generates idempotent license code, activates u
 
   // Invalid signature rejected with 401
   const badRes = await webhookHandler({
-    request: new Request('https://v-play.pages.dev/api/webhook/lynk', {
+    request: new Request('https://funplay.workers.dev/api/webhook/lynk', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-lynk-signature': 'deadbeef' },
       body: rawBody,
@@ -98,7 +98,7 @@ test('webhook verifies signature, generates idempotent license code, activates u
   // Valid HMAC-SHA256 raw body signature creates license
   const validSig = await hmacSha256Hex(env.LYNK_MERCHANT_KEY, rawBody);
   const okRes = await webhookHandler({
-    request: new Request('https://v-play.pages.dev/api/webhook/lynk', {
+    request: new Request('https://funplay.workers.dev/api/webhook/lynk', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-lynk-signature': validSig },
       body: rawBody,
@@ -110,13 +110,13 @@ test('webhook verifies signature, generates idempotent license code, activates u
   assert.equal(okJson.duplicate, false);
 
   const row = DB.sqlite.prepare('SELECT * FROM licenses WHERE ref_id = ?').get('LYNK-REF-1001');
-  assert.ok(row && row.code.startsWith('VP-'));
+  assert.ok(row && row.code.startsWith('FP-'));
   assert.equal(row.customer_email, 'budi@example.com');
 
   // Duplicate webhook with legacy SHA256(grandTotal + refId + message_id + merchantKey) stays idempotent
   const legacySig = await sha256Hex(`49000LYNK-REF-1001msg_001${env.LYNK_MERCHANT_KEY}`);
   const dupRes = await webhookHandler({
-    request: new Request('https://v-play.pages.dev/api/webhook/lynk', {
+    request: new Request('https://funplay.workers.dev/api/webhook/lynk', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-lynk-signature': legacySig },
       body: rawBody,
@@ -132,7 +132,7 @@ test('webhook verifies signature, generates idempotent license code, activates u
   let tokenDev1 = '';
   for (const devId of ['device-1-abc', 'device-1-abc', 'device-2-def', 'device-3-ghi']) {
     const actRes = await activateHandler({
-      request: new Request('https://v-play.pages.dev/api/license/activate', {
+      request: new Request('https://funplay.workers.dev/api/license/activate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: row.code.toLowerCase(), deviceId: devId }),
@@ -148,7 +148,7 @@ test('webhook verifies signature, generates idempotent license code, activates u
 
   // 4th unique device is blocked with 403
   const dev4Res = await activateHandler({
-    request: new Request('https://v-play.pages.dev/api/license/activate', {
+    request: new Request('https://funplay.workers.dev/api/license/activate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code: row.code, deviceId: 'device-4-jkl' }),
@@ -159,13 +159,13 @@ test('webhook verifies signature, generates idempotent license code, activates u
 
   // /api/catalog returns 139 words with valid bearer token and rejects unauthenticated requests
   const catBad = await catalogHandler({
-    request: new Request('https://v-play.pages.dev/api/catalog'),
+    request: new Request('https://funplay.workers.dev/api/catalog'),
     env,
   });
   assert.equal(catBad.status, 401);
 
   const catOk = await catalogHandler({
-    request: new Request('https://v-play.pages.dev/api/catalog', {
+    request: new Request('https://funplay.workers.dev/api/catalog', {
       headers: { Authorization: `Bearer ${tokenDev1}` },
     }),
     env,
@@ -177,7 +177,7 @@ test('webhook verifies signature, generates idempotent license code, activates u
 
   // Recover endpoint returns identical neutral 200 and never leaks the code in JSON
   const recRes = await recoverHandler({
-    request: new Request('https://v-play.pages.dev/api/license/recover', {
+    request: new Request('https://funplay.workers.dev/api/license/recover', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'budi@example.com' }),
@@ -191,7 +191,7 @@ test('webhook verifies signature, generates idempotent license code, activates u
   // Revoking license immediately blocks /api/catalog
   DB.sqlite.prepare("UPDATE licenses SET status = 'revoked' WHERE id = ?").run(row.id);
   const revokedCat = await catalogHandler({
-    request: new Request('https://v-play.pages.dev/api/catalog', {
+    request: new Request('https://funplay.workers.dev/api/catalog', {
       headers: { Authorization: `Bearer ${tokenDev1}` },
     }),
     env,
@@ -204,7 +204,7 @@ test('worker entrypoint routes API endpoints, rejects unknown methods/paths, and
   const assetCalls = [];
   const env = {
     DB,
-    LYNK_PRODUCT_URL: 'https://lynk.id/vplay/test',
+    LYNK_PRODUCT_URL: 'https://lynk.id/funplay/test',
     ASSETS: {
       async fetch(req) {
         assetCalls.push(new URL(req.url).pathname);
@@ -213,22 +213,22 @@ test('worker entrypoint routes API endpoints, rejects unknown methods/paths, and
     },
   };
 
-  const cfgRes = await worker.fetch(new Request('https://v-play.workers.dev/api/config'), env, {});
+  const cfgRes = await worker.fetch(new Request('https://funplay.workers.dev/api/config'), env, {});
   assert.equal(cfgRes.status, 200);
   const cfgData = await cfgRes.json();
-  assert.equal(cfgData.lynkUrl, 'https://lynk.id/vplay/test');
+  assert.equal(cfgData.lynkUrl, 'https://lynk.id/funplay/test');
 
   const methodErr = await worker.fetch(
-    new Request('https://v-play.workers.dev/api/config', { method: 'POST' }),
+    new Request('https://funplay.workers.dev/api/config', { method: 'POST' }),
     env,
     {}
   );
   assert.equal(methodErr.status, 405);
 
-  const notFoundApi = await worker.fetch(new Request('https://v-play.workers.dev/api/unknown'), env, {});
+  const notFoundApi = await worker.fetch(new Request('https://funplay.workers.dev/api/unknown'), env, {});
   assert.equal(notFoundApi.status, 404);
 
-  const assetRes = await worker.fetch(new Request('https://v-play.workers.dev/index.html'), env, {});
+  const assetRes = await worker.fetch(new Request('https://funplay.workers.dev/index.html'), env, {});
   assert.equal(assetRes.status, 200);
   assert.equal(await assetRes.text(), 'asset-ok');
   assert.deepEqual(assetCalls, ['/index.html']);

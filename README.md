@@ -1,25 +1,27 @@
-# v-play
+# FunPlay
 
 Aplikasi web belajar kosakata bahasa Inggris dasar untuk anak usia 1-5 tahun dengan ilustrasi bergaya buku cerita dan audio pelafalan lokal.
 
 ## Fitur
 
-- **Sentuh & Dengar (1-2 tahun)**: kartu gambar besar yang langsung mengucapkan kata bahasa Inggris saat disentuh, plus opsi **Mode 1 kartu** agar anak fokus pada satu gambar besar.
-- **Tebak Gambar (3-5 tahun)**: pertanyaan suara (*"Where is the elephant?"*) dengan pilihan **2 gambar** atau **3 gambar**, opsi sembunyikan/tampilkan tulisan kata, serta respons ramah saat salah sentuh.
-- **Tanpa server & tanpa build**: seluruh aset gambar, audio MP3, dan font disimpan lokal memakai path relatif (`./`).
+- **Sentuh & Dengar (1-2 tahun)**: kartu gambar besar yang langsung mengucapkan kata bahasa Inggris saat disentuh, plus opsi **Mode 1 kartu**.
+- **Tebak Gambar (3-5 tahun)**, **Puzzle Kata**, **Cocokkan Kartu**, **Hitung Bersama**, dan **Cari yang Beda**.
+- **Mode Preview Gratis & Akses Penuh**: mode gratis untuk mencoba kategori Hewan, dan akses penuh sekali bayar untuk membuka semua 6 permainan serta 139 kosakata (hingga 3 perangkat keluarga).
 
 ## Menjalankan Secara Lokal
-
-Karena aplikasi memakai ES Modules (`<script type="module">`), jalankan lewat server statis lokal (bukan `file://`):
 
 ```bash
 npx serve .
 ```
 
-## Cara Unggah & Jalankan Langsung di GitHub Pages
+Atau dengan test backend & logika aplikasi (Node.js 22+):
 
-1. Buat repository baru di GitHub (misalnya `v-play`) dan push seluruh isi folder ini ke branch `main`.
-2. Buka **Settings > Pages** di repository tersebut.
-3. Pada **Build and deployment**, pilih **Deploy from a branch**, pilih branch `main` dan folder `/ (root)`, lalu klik **Save**.
-4. Tunggu beberapa saat sampai GitHub Pages menerbitkan URL aplikasi Anda (`https://<username>.github.io/v-play/`).
+```bash
+node --test tests/words.test.mjs tests/puzzle.test.mjs tests/games.test.mjs tests/license.test.mjs
+```
 
+## Deploy di Cloudflare Workers + D1
+
+1. Hubungkan repository ini ke **Cloudflare Workers & Pages** (Workers with Static Assets) dengan nama Worker **`funplay`** sesuai [wrangler.toml](wrangler.toml).
+2. Buat D1 Database bernama **`funplay-licenses`**, lalu jalankan isi [migrations/0001_licenses.sql](migrations/0001_licenses.sql) di Console D1.
+3. Isi `database_id` pada blok `[[d1_databases]]` di [wrangler.toml](wrangler.toml) dan pasang environment variables/secrets (`LYNK_MERCHANT_KEY`, `LYNK_PRODUCT_URL`, dan opsional `RESEND_API_KEY`, `EMAIL_FROM`, `APP_PUBLIC_URL`, `MAX_DEVICES`).
