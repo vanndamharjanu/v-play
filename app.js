@@ -609,13 +609,13 @@ function syncAccessUI() {
   els.licenseTriggerBtn.classList.toggle('is-unlocked', state.unlocked);
   els.licenseTriggerLabel.textContent = state.unlocked ? 'Akses Penuh' : 'Buka Semua';
   if (state.unlocked && state.usedDevices > 0) {
-    els.licenseSummary.textContent = `Akses penuh aktif (${state.usedDevices} dari ${state.maxDevices} perangkat). Seluruh 6 permainan dan 139 kosakata sudah terbuka.`;
+    els.licenseSummary.textContent = `Akses penuh aktif (${state.usedDevices} dari ${state.maxDevices} perangkat). Seluruh 6 permainan dan 201 kosakata sudah terbuka.`;
   } else if (state.unlocked) {
     els.licenseSummary.textContent =
-      'Akses penuh aktif. Seluruh 6 permainan dan 139 kosakata sudah terbuka.';
+      'Akses penuh aktif. Seluruh 6 permainan dan 201 kosakata sudah terbuka.';
   } else {
     els.licenseSummary.textContent =
-      'Gratis mencoba Sentuh & Dengar (Hewan). Masukkan kode lisensi dari pembelian Lynk.id untuk membuka semua 6 permainan & 139 kosakata (berlaku hingga 3 HP keluarga).';
+      'Gratis mencoba Sentuh & Dengar (Hewan). Masukkan kode lisensi dari pembelian Lynk.id untuk membuka semua 6 permainan & 201 kosakata (berlaku hingga 3 HP keluarga).';
   }
 
   for (const entry of modeTabs) {

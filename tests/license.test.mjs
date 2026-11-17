@@ -146,7 +146,7 @@ test('webhook verifies signature, generates idempotent license code, activates u
     assert.equal(actRes.status, 200);
     const actJson = await actRes.json();
     assert.equal(actJson.ok, true);
-    assert.equal(actJson.catalog.length, 139);
+    assert.equal(actJson.catalog.length, 201);
     if (devId === 'device-1-abc') tokenDev1 = actJson.token;
   }
 
@@ -161,7 +161,7 @@ test('webhook verifies signature, generates idempotent license code, activates u
   });
   assert.equal(dev4Res.status, 403);
 
-  // /api/catalog returns 139 words with valid bearer token and rejects unauthenticated requests
+  // /api/catalog returns 201 words with valid bearer token and rejects unauthenticated requests
   const catBad = await catalogHandler({
     request: new Request('https://funplay.workers.dev/api/catalog'),
     env,
@@ -176,7 +176,7 @@ test('webhook verifies signature, generates idempotent license code, activates u
   });
   assert.equal(catOk.status, 200);
   const catJson = await catOk.json();
-  assert.equal(catJson.catalog.length, 139);
+  assert.equal(catJson.catalog.length, 201);
   assert.equal(catJson.usedDevices, 3);
 
   // Recover endpoint returns identical neutral 200 and never leaks the code in JSON

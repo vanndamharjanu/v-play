@@ -19,19 +19,31 @@ import {
 import { FULL_WORDS } from '../functions/_lib/catalog.js';
 
 const rootDir = path.resolve(import.meta.dirname, '..');
-const folderCategories = ['animals', 'colors', 'fruits', 'objects', 'alphabets', 'numbers', 'shapes'];
+const folderCategories = [
+  'animals',
+  'colors',
+  'fruits',
+  'vegetables',
+  'food',
+  'body',
+  'vehicles',
+  'objects',
+  'alphabets',
+  'numbers',
+  'shapes',
+];
 
-test('FREE_WORDS exposes 20 preview animals and unlockCatalogWords loads all 139 entries', () => {
+test('FREE_WORDS exposes 20 preview animals and unlockCatalogWords loads all 201 entries', () => {
   resetToFreeWords();
   assert.equal(FREE_WORDS.length, 20);
   assert.equal(WORDS.length, 20);
   assert.ok(WORDS.every((w) => w.category === 'animals'));
   assert.equal(unlockCatalogWords(FULL_WORDS), true);
-  assert.equal(WORDS.length, 139);
+  assert.equal(WORDS.length, 201);
 });
 
 test('every word entry has unique id and points to existing image and audio files', () => {
-  assert.equal(FULL_WORDS.length, 139);
+  assert.equal(FULL_WORDS.length, 201);
   assert.equal(new Set(FULL_WORDS.map((w) => w.id)).size, FULL_WORDS.length);
   for (const item of FULL_WORDS) {
     assert.ok(CATEGORIES.some((c) => c.id === item.category), `unknown category ${item.category}`);
@@ -66,10 +78,14 @@ test('every image in category subfolders is referenced in FULL_WORDS', () => {
 });
 
 test('filterWords filters by category and handles unknown or all', () => {
-  assert.equal(filterWords('all', FULL_WORDS).length, 139);
+  assert.equal(filterWords('all', FULL_WORDS).length, 201);
   assert.equal(filterWords('animals', FULL_WORDS).length, 20);
   assert.equal(filterWords('colors', FULL_WORDS).length, 12);
   assert.equal(filterWords('fruits', FULL_WORDS).length, 20);
+  assert.equal(filterWords('vegetables', FULL_WORDS).length, 20);
+  assert.equal(filterWords('food', FULL_WORDS).length, 15);
+  assert.equal(filterWords('body', FULL_WORDS).length, 12);
+  assert.equal(filterWords('vehicles', FULL_WORDS).length, 15);
   assert.equal(filterWords('objects', FULL_WORDS).length, 20);
   assert.equal(filterWords('alphabets', FULL_WORDS).length, 26);
   assert.equal(filterWords('numbers', FULL_WORDS).length, 29);
@@ -103,12 +119,16 @@ test('getPromptText and getPraiseText format category-specific speech clearly', 
   const letterA = FULL_WORDS.find((w) => w.id === 'letter-a');
   const numberTen = FULL_WORDS.find((w) => w.id === 'number-10');
   const shapeStar = FULL_WORDS.find((w) => w.id === 'star');
+  const bodyTeeth = FULL_WORDS.find((w) => w.id === 'teeth');
+  const vegCarrot = FULL_WORDS.find((w) => w.id === 'carrot');
 
   assert.equal(getPromptText(colorOrange), 'Where is the color orange?');
   assert.equal(getPromptText(fruitOrange), 'Where is the orange?');
   assert.equal(getPromptText(letterA), 'Where is the letter A?');
   assert.equal(getPromptText(numberTen), 'Where is the number ten?');
   assert.equal(getPromptText(shapeStar), 'Where is the star?');
+  assert.equal(getPromptText(bodyTeeth), 'Where are the teeth?');
+  assert.equal(getPromptText(vegCarrot), 'Where is the carrot?');
 
   assert.equal(getPraiseText(letterA), 'Great! Letter A!');
   assert.equal(getPraiseText(shapeStar), 'Great! Star!');

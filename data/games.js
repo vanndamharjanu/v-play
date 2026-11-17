@@ -33,7 +33,15 @@ export const GAME_LEVELS = {
   },
 };
 
-const COUNTABLE_CATEGORIES = new Set(['animals', 'fruits', 'objects', 'shapes']);
+const COUNTABLE_CATEGORIES = new Set([
+  'animals',
+  'fruits',
+  'vegetables',
+  'food',
+  'vehicles',
+  'objects',
+  'shapes',
+]);
 const CATEGORY_LABEL_MAP = new Map(CATEGORIES.map((c) => [c.id, c.label]));
 
 export function getGameLevelConfig(level) {

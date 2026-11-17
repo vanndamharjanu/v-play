@@ -3,6 +3,10 @@ export const CATEGORIES = [
   { id: 'animals', label: 'Hewan', thumb: './assets/images/animals/cat.jpg' },
   { id: 'colors', label: 'Warna', thumb: './assets/images/colors/red.jpg' },
   { id: 'fruits', label: 'Buah', thumb: './assets/images/fruits/apple.jpg' },
+  { id: 'vegetables', label: 'Sayur', thumb: './assets/images/vegetables/carrot.jpg' },
+  { id: 'food', label: 'Makanan', thumb: './assets/images/food/pizza.jpg' },
+  { id: 'body', label: 'Tubuh', thumb: './assets/images/body/hand.jpg' },
+  { id: 'vehicles', label: 'Kendaraan', thumb: './assets/images/vehicles/car.jpg' },
   { id: 'objects', label: 'Benda', thumb: './assets/images/objects/ball.jpg' },
   { id: 'alphabets', label: 'Huruf', thumb: './assets/images/alphabets/A.jpg' },
   { id: 'numbers', label: 'Angka', thumb: './assets/images/numbers/3.jpg' },
@@ -60,11 +64,14 @@ export function resetToFreeWords() {
   WORDS.splice(0, WORDS.length, ...FREE_WORDS);
 }
 
+const PLURAL_PROMPT_IDS = new Set(['beans', 'peas', 'noodles', 'teeth']);
+
 export function getPromptText(item) {
   const lower = item.word.toLowerCase();
   if (item.category === 'colors') return `Where is the color ${lower}?`;
   if (item.category === 'alphabets') return `Where is the letter ${item.word}?`;
   if (item.category === 'numbers') return `Where is the number ${lower}?`;
+  if (PLURAL_PROMPT_IDS.has(item.id)) return `Where are the ${lower}?`;
   return `Where is the ${lower}?`;
 }
 

@@ -437,7 +437,8 @@ export function createPuzzleController({
     const punchWhiteHoles =
       target.category === 'alphabets' ||
       target.category === 'numbers' ||
-      target.category === 'objects';
+      target.category === 'objects' ||
+      target.category === 'vehicles';
 
     try {
       const silUrl = await createSilhouetteUrl(target.image, punchWhiteHoles);
