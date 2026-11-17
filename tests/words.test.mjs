@@ -40,6 +40,11 @@ test('FREE_WORDS exposes 20 preview animals and unlockCatalogWords loads all 201
   assert.ok(WORDS.every((w) => w.category === 'animals'));
   assert.equal(unlockCatalogWords(FULL_WORDS), true);
   assert.equal(WORDS.length, 201);
+
+  const legacyCached = FULL_WORDS.map((w) => ({ ...w, image: w.image.replace(/\.webp$/i, '.jpg') }));
+  assert.equal(unlockCatalogWords(legacyCached), true);
+  assert.ok(WORDS.every((w) => w.image.endsWith('.webp')));
+  resetToFreeWords();
 });
 
 test('every word entry has unique id and points to existing image and audio files', () => {

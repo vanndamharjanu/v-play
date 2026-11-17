@@ -24,9 +24,14 @@ Dokumen ini mencatat perubahan pada aplikasi **FunPlay** (Main & Belajar Bahasa 
 - Memindahkan `Airplane`, `Bicycle`, `Bus`, dan `Car` dari kategori `objects` ke kategori `vehicles`.
 - Memperbarui tampilan jumlah total katalog dari `139` menjadi `201 kosakata` pada modal aktivasi lisensi, UI aplikasi, README, dan unit test.
 - Memperbarui versi footer aplikasi dari `v1.0` menjadi `v1.1`.
+- Menambahkan preload khusus untuk 2–4 gambar ronde aktif di **Kartu Memori** agar gambar langsung tampil instan saat kartu disentuh.
+
+### Diperbaiki
+- Memperbaiki bug layout Safari iOS (WebKit) pada tombol kartu flex-column (`.card-art`, `.spotlight-img-box`, `.letters-picture-card`, `.shadow-target-box`) yang membuat kartu melar ke bawah, keluar batas stage, dan menutupi kotak feedback/`Lanjut` serta footer.
 
 ### Aset Audio & Gambar
-- Melengkapi seluruh 201 kosakata dengan gambar `.jpg` dan klip audio `.mp3` lokal (`assets/audio/words/`, `prompts/`, `praise/`), termasuk 186 file `.mp3` baru untuk 62 kata tambahan yang dibuat dengan `edge-tts` (`en-US-AvaNeural`, `rate="-10%"`).
+- Mengonversi seluruh 201 gambar dari `.jpg` ke `.webp` pada resolusi penuh `1024×1024 px` (total ukuran aset gambar turun dari `70,39 MB` menjadi `6,17 MB`), disertai normalisasi path cache `.jpg` → `.webp` pada `unlockCatalogWords`.
+- Melengkapi seluruh 201 kosakata dengan klip audio `.mp3` lokal (`assets/audio/words/`, `prompts/`, `praise/`), termasuk 186 file `.mp3` baru untuk 62 kata tambahan yang dibuat dengan `edge-tts` (`en-US-AvaNeural`, `rate="-10%"`).
 
 ---
 

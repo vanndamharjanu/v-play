@@ -1,22 +1,22 @@
 export const CATEGORIES = [
   { id: 'all', label: 'Semua', thumb: null },
-  { id: 'animals', label: 'Hewan', thumb: './assets/images/animals/cat.jpg' },
-  { id: 'colors', label: 'Warna', thumb: './assets/images/colors/red.jpg' },
-  { id: 'fruits', label: 'Buah', thumb: './assets/images/fruits/apple.jpg' },
-  { id: 'vegetables', label: 'Sayur', thumb: './assets/images/vegetables/carrot.jpg' },
-  { id: 'food', label: 'Makanan', thumb: './assets/images/food/pizza.jpg' },
-  { id: 'body', label: 'Tubuh', thumb: './assets/images/body/hand.jpg' },
-  { id: 'vehicles', label: 'Kendaraan', thumb: './assets/images/vehicles/car.jpg' },
-  { id: 'objects', label: 'Benda', thumb: './assets/images/objects/ball.jpg' },
-  { id: 'alphabets', label: 'Huruf', thumb: './assets/images/alphabets/A.jpg' },
-  { id: 'numbers', label: 'Angka', thumb: './assets/images/numbers/3.jpg' },
-  { id: 'shapes', label: 'Bentuk', thumb: './assets/images/shapes/star.jpg' },
+  { id: 'animals', label: 'Hewan', thumb: './assets/images/animals/cat.webp' },
+  { id: 'colors', label: 'Warna', thumb: './assets/images/colors/red.webp' },
+  { id: 'fruits', label: 'Buah', thumb: './assets/images/fruits/apple.webp' },
+  { id: 'vegetables', label: 'Sayur', thumb: './assets/images/vegetables/carrot.webp' },
+  { id: 'food', label: 'Makanan', thumb: './assets/images/food/pizza.webp' },
+  { id: 'body', label: 'Tubuh', thumb: './assets/images/body/hand.webp' },
+  { id: 'vehicles', label: 'Kendaraan', thumb: './assets/images/vehicles/car.webp' },
+  { id: 'objects', label: 'Benda', thumb: './assets/images/objects/ball.webp' },
+  { id: 'alphabets', label: 'Huruf', thumb: './assets/images/alphabets/A.webp' },
+  { id: 'numbers', label: 'Angka', thumb: './assets/images/numbers/3.webp' },
+  { id: 'shapes', label: 'Bentuk', thumb: './assets/images/shapes/star.webp' },
 ];
 
 export const FREE_MODES = new Set(['explore']);
 export const FREE_CATEGORIES = new Set(['animals']);
 
-export const wordEntry = (category, id, word, indo, pronun, imageFile = `${id}.jpg`) => ({
+export const wordEntry = (category, id, word, indo, pronun, imageFile = `${id}.webp`) => ({
   id,
   word,
   indo,
@@ -56,7 +56,12 @@ export const WORDS = [...FREE_WORDS];
 
 export function unlockCatalogWords(fullList) {
   if (!Array.isArray(fullList) || fullList.length <= FREE_WORDS.length) return false;
-  WORDS.splice(0, WORDS.length, ...fullList);
+  const normalized = fullList.map((item) =>
+    typeof item?.image === 'string' && item.image.endsWith('.jpg')
+      ? { ...item, image: item.image.replace(/\.jpg$/i, '.webp') }
+      : item
+  );
+  WORDS.splice(0, WORDS.length, ...normalized);
   return true;
 }
 

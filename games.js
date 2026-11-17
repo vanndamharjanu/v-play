@@ -61,6 +61,19 @@ export function createGamesController({
     countedOrder: new Map(),
   };
 
+  const preloadedImageUrls = new Set();
+
+  function preloadMemoryRoundImages(pairs) {
+    if (typeof Image === 'undefined') return;
+    for (const item of pairs) {
+      if (!item?.image || preloadedImageUrls.has(item.image)) continue;
+      preloadedImageUrls.add(item.image);
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = item.image;
+    }
+  }
+
   function clearMismatchTimer() {
     if (gState.mismatchTimer) {
       clearTimeout(gState.mismatchTimer);
@@ -484,6 +497,7 @@ export function createGamesController({
 
     if (mode === 'memory') {
       gState.memoryDeck = buildMemoryDeck(pool, gState.level);
+      preloadMemoryRoundImages(gState.memoryDeck.pairs);
       gState.flippedUids = [];
       gState.matchedIds = new Set();
       gState.moves = 0;

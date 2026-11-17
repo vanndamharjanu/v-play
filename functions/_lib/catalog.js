@@ -49,7 +49,7 @@ export const FULL_WORDS = [
   wordEntry('colors', 'gold', 'Gold', 'emas', 'gould'),
   wordEntry('colors', 'green', 'Green', 'hijau', 'grin'),
   wordEntry('colors', 'grey', 'Grey', 'abu-abu', 'grei'),
-  wordEntry('colors', 'color-orange', 'Orange', 'oranye', 'OR-inj', 'orange.jpg'),
+  wordEntry('colors', 'color-orange', 'Orange', 'oranye', 'OR-inj', 'orange.webp'),
   wordEntry('colors', 'pink', 'Pink', 'merah muda', 'pingk'),
   wordEntry('colors', 'purple', 'Purple', 'ungu', 'PUR-puhl'),
   wordEntry('colors', 'red', 'Red', 'merah', 'red'),
@@ -60,17 +60,17 @@ export const FULL_WORDS = [
   wordEntry('fruits', 'apple', 'Apple', 'apel', 'AP-uhl'),
   wordEntry('fruits', 'avocado', 'Avocado', 'alpukat', 'av-uh-KA-dou'),
   wordEntry('fruits', 'banana', 'Banana', 'pisang', 'buh-NA-nuh'),
-  wordEntry('fruits', 'blueberry', 'Blueberry', 'bluberi', 'BLU-ber-i', 'Blueberry.jpg'),
+  wordEntry('fruits', 'blueberry', 'Blueberry', 'bluberi', 'BLU-ber-i', 'Blueberry.webp'),
   wordEntry('fruits', 'cherry', 'Cherry', 'ceri', 'CHER-i'),
   wordEntry('fruits', 'coconut', 'Coconut', 'kelapa', 'KOU-kuh-nat'),
-  wordEntry('fruits', 'dragon-fruit', 'Dragon fruit', 'buah naga', 'DRAG-uhn frut', 'Dragon_fruit.jpg'),
+  wordEntry('fruits', 'dragon-fruit', 'Dragon fruit', 'buah naga', 'DRAG-uhn frut', 'Dragon_fruit.webp'),
   wordEntry('fruits', 'grape', 'Grape', 'anggur', 'greip'),
   wordEntry('fruits', 'kiwi', 'Kiwi', 'kiwi', 'KI-wi'),
   wordEntry('fruits', 'lemon', 'Lemon', 'lemon', 'LEM-uhn'),
   wordEntry('fruits', 'mango', 'Mango', 'mangga', 'MANG-gou'),
   wordEntry('fruits', 'mangosteen', 'Mangosteen', 'manggis', 'MANG-guh-stin'),
   wordEntry('fruits', 'melon', 'Melon', 'melon', 'MEL-uhn'),
-  wordEntry('fruits', 'orange', 'Orange', 'jeruk', 'OR-inj', 'orange_fruit.jpg'),
+  wordEntry('fruits', 'orange', 'Orange', 'jeruk', 'OR-inj', 'orange_fruit.webp'),
   wordEntry('fruits', 'papaya', 'Papaya', 'pepaya', 'puh-PAI-uh'),
   wordEntry('fruits', 'pear', 'Pear', 'pir', 'per'),
   wordEntry('fruits', 'pineapple', 'Pineapple', 'nanas', 'PAI-nap-uhl'),
@@ -80,7 +80,7 @@ export const FULL_WORDS = [
 
   // Vegetables (20)
   wordEntry('vegetables', 'beans', 'Beans', 'buncis', 'binz'),
-  wordEntry('vegetables', 'bell-pepper', 'Bell pepper', 'paprika', 'BEL pep-uhr', 'bell_pepper.jpg'),
+  wordEntry('vegetables', 'bell-pepper', 'Bell pepper', 'paprika', 'BEL pep-uhr', 'bell_pepper.webp'),
   wordEntry('vegetables', 'broccoli', 'Broccoli', 'brokoli', 'BROK-uh-li'),
   wordEntry('vegetables', 'cabbage', 'Cabbage', 'kubis', 'KAB-ij'),
   wordEntry('vegetables', 'carrot', 'Carrot', 'wortel', 'KAR-uht'),
@@ -97,7 +97,7 @@ export const FULL_WORDS = [
   wordEntry('vegetables', 'potato', 'Potato', 'kentang', 'puh-TEI-tou'),
   wordEntry('vegetables', 'pumpkin', 'Pumpkin', 'labu', 'PAMP-kin'),
   wordEntry('vegetables', 'radish', 'Radish', 'lobak', 'RAD-ish'),
-  wordEntry('vegetables', 'spinach', 'Spinach', 'bayam', 'SPIN-ich', 'Spinach.jpg'),
+  wordEntry('vegetables', 'spinach', 'Spinach', 'bayam', 'SPIN-ich', 'Spinach.webp'),
   wordEntry('vegetables', 'tomato', 'Tomato', 'tomat', 'tuh-MEI-tou'),
 
   // Food (15)
@@ -108,7 +108,7 @@ export const FULL_WORDS = [
   wordEntry('food', 'donut', 'Donut', 'donat', 'DOU-nat'),
   wordEntry('food', 'egg', 'Egg', 'telur', 'eg'),
   wordEntry('food', 'honey', 'Honey', 'madu', 'HAN-i'),
-  wordEntry('food', 'ice-cream', 'Ice cream', 'es krim', 'ais krim', 'ice_cream.jpg'),
+  wordEntry('food', 'ice-cream', 'Ice cream', 'es krim', 'ais krim', 'ice_cream.webp'),
   wordEntry('food', 'milk', 'Milk', 'susu', 'milk'),
   wordEntry('food', 'noodles', 'Noodles', 'mi', 'NU-duhlz'),
   wordEntry('food', 'pizza', 'Pizza', 'pizza', 'PIT-suh'),
@@ -135,10 +135,10 @@ export const FULL_WORDS = [
   wordEntry('vehicles', 'airplane', 'Airplane', 'pesawat', 'ER-plein'),
   wordEntry('vehicles', 'ambulance', 'Ambulance', 'ambulans', 'AM-byuh-luhns'),
   wordEntry('vehicles', 'bicycle', 'Bicycle', 'sepeda', 'BAI-si-kuhl'),
-  wordEntry('vehicles', 'boat', 'Boat', 'perahu', 'bout', 'Wooden_rowboat_with_two_oars_611d8280.jpg'),
+  wordEntry('vehicles', 'boat', 'Boat', 'perahu', 'bout', 'Wooden_rowboat_with_two_oars_611d8280.webp'),
   wordEntry('vehicles', 'bus', 'Bus', 'bus', 'bas'),
   wordEntry('vehicles', 'car', 'Car', 'mobil', 'kar'),
-  wordEntry('vehicles', 'fire-truck', 'Fire truck', 'mobil pemadam', 'FAI-uhr trak', 'fire_truck.jpg'),
+  wordEntry('vehicles', 'fire-truck', 'Fire truck', 'mobil pemadam', 'FAI-uhr trak', 'fire_truck.webp'),
   wordEntry('vehicles', 'helicopter', 'Helicopter', 'helikopter', 'HEL-i-kop-tuhr'),
   wordEntry('vehicles', 'motorcycle', 'Motorcycle', 'sepeda motor', 'MOU-tuhr-sai-kuhl'),
   wordEntry('vehicles', 'rocket', 'Rocket', 'roket', 'ROK-it'),
@@ -166,18 +166,18 @@ export const FULL_WORDS = [
   wordEntry('objects', 'spoon', 'Spoon', 'sendok', 'spun'),
   wordEntry('objects', 't-shirt', 'T-shirt', 'kaus', 'TI-shurt'),
   wordEntry('objects', 'table', 'Table', 'meja', 'TEI-buhl'),
-  wordEntry('objects', 'teddy-bear', 'Teddy bear', 'boneka beruang', 'TED-i ber', 'Teddy_bear.jpg'),
+  wordEntry('objects', 'teddy-bear', 'Teddy bear', 'boneka beruang', 'TED-i ber', 'Teddy_bear.webp'),
   wordEntry('objects', 'toothbrush', 'Toothbrush', 'sikat gigi', 'TUTH-brash'),
   wordEntry('objects', 'umbrella', 'Umbrella', 'payung', 'am-BREL-uh'),
 
   // Alphabets (26)
   ...[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map((ch) =>
-    wordEntry('alphabets', `letter-${ch.toLowerCase()}`, ch, `huruf ${ch}`, ALPHABET_PRONUN[ch], `${ch}.jpg`)
+    wordEntry('alphabets', `letter-${ch.toLowerCase()}`, ch, `huruf ${ch}`, ALPHABET_PRONUN[ch], `${ch}.webp`)
   ),
 
   // Numbers (29)
   ...NUMBER_ITEMS.map(([n, word, indo, pronun]) =>
-    wordEntry('numbers', `number-${n}`, word, indo, pronun, `${n}.jpg`)
+    wordEntry('numbers', `number-${n}`, word, indo, pronun, `${n}.webp`)
   ),
 
   // Shapes (12)
