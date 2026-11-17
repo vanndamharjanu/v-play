@@ -25,6 +25,7 @@ Dokumen ini mencatat perubahan pada aplikasi **FunPlay** (Main & Belajar Bahasa 
 - Memperbarui tampilan jumlah total katalog dari `139` menjadi `201 kosakata` pada modal aktivasi lisensi, UI aplikasi, README, dan unit test.
 - Memperbarui versi footer aplikasi dari `v1.0` menjadi `v1.1`.
 - Menambahkan preload khusus untuk 2–4 gambar ronde aktif di **Kartu Memori** agar gambar langsung tampil instan saat kartu disentuh.
+- Menambahkan gambar preview link (`assets/og-funplay.jpg`, `1200×630 px`), ikon iOS (`assets/apple-touch-icon.png`), serta meta tag Open Graph & Twitter Card di `index.html` untuk tampilan share di WhatsApp, Threads, dan X.
 
 ### Diperbaiki
 - Memperbaiki bug layout Safari iOS (WebKit) pada tombol kartu flex-column (`.card-art`, `.spotlight-img-box`, `.letters-picture-card`, `.shadow-target-box`) yang membuat kartu melar ke bawah, keluar batas stage, dan menutupi kotak feedback/`Lanjut` serta footer.
