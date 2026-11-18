@@ -4,6 +4,20 @@ Dokumen ini mencatat perubahan pada aplikasi **FunPlay** (Main & Belajar Bahasa 
 
 ---
 
+## v1.1.1 — 2026-11-18
+
+**Perluasan fitur uji coba gratis & drag-and-drop Puzzle**
+
+### Ditambahkan
+- **Perluasan mode gratis (tanpa kode lisensi):**
+  - Topik **Warna (`colors`)** kini ikut terbuka gratis bersama **Hewan (`animals`)** (total 32 kata preview di `FREE_WORDS`).
+  - **Tebak Gambar** terbuka untuk opsi **2 gambar** (Hewan & Warna), sementara opsi **3 gambar** terkunci hingga aktivasi lisensi.
+  - **Puzzle** terbuka untuk **Potongan Gambar Level 1** (Hewan & Warna), sementara *Cocokkan Bayangan*, *Susun Huruf*, Level 2, dan Level 3 tetap terkunci.
+  - **Kartu Memori** terbuka untuk **Level 1** (Hewan & Warna), sementara Level 2 dan Level 3 tetap terkunci.
+- **Drag-and-drop pada Puzzle Potongan Gambar:** Potongan gambar kini bisa dicubit/diseret langsung dengan jari atau mouse ke kotak papan yang cocok (Pointer Events + `touch-action: none`), dengan sorotan kotak target dan tetap mendukung ketuk/keyboard.
+
+---
+
 ## v1.1 — 2026-11-17
 
 **Ekspansi besar katalog kosakata (139 -> 201 kata) & 4 topik baru**

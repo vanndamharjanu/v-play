@@ -42,20 +42,6 @@ const NUMBER_ITEMS = [
 export const FULL_WORDS = [
   ...FREE_WORDS,
 
-  // Colors (12)
-  wordEntry('colors', 'black', 'Black', 'hitam', 'blak'),
-  wordEntry('colors', 'blue', 'Blue', 'biru', 'blu'),
-  wordEntry('colors', 'brown', 'Brown', 'cokelat', 'braun'),
-  wordEntry('colors', 'gold', 'Gold', 'emas', 'gould'),
-  wordEntry('colors', 'green', 'Green', 'hijau', 'grin'),
-  wordEntry('colors', 'grey', 'Grey', 'abu-abu', 'grei'),
-  wordEntry('colors', 'color-orange', 'Orange', 'oranye', 'OR-inj', 'orange.webp'),
-  wordEntry('colors', 'pink', 'Pink', 'merah muda', 'pingk'),
-  wordEntry('colors', 'purple', 'Purple', 'ungu', 'PUR-puhl'),
-  wordEntry('colors', 'red', 'Red', 'merah', 'red'),
-  wordEntry('colors', 'white', 'White', 'putih', 'wait'),
-  wordEntry('colors', 'yellow', 'Yellow', 'kuning', 'YEL-ou'),
-
   // Fruits (20)
   wordEntry('fruits', 'apple', 'Apple', 'apel', 'AP-uhl'),
   wordEntry('fruits', 'avocado', 'Avocado', 'alpukat', 'av-uh-KA-dou'),

@@ -6,7 +6,7 @@ Aplikasi web belajar kosakata bahasa Inggris dasar untuk anak usia 1-5 tahun den
 
 - **Sentuh & Dengar (1-2 tahun)**: kartu gambar besar yang langsung mengucapkan kata bahasa Inggris saat disentuh, plus opsi **Mode 1 kartu**.
 - **Tebak Gambar (3-5 tahun)**, **Puzzle Kata**, **Cocokkan Kartu**, **Hitung Bersama**, dan **Cari yang Beda**.
-- **Mode Preview Gratis & Akses Penuh**: mode gratis untuk mencoba kategori Hewan, dan akses penuh sekali bayar untuk membuka semua 6 permainan serta 201 kosakata (hingga 3 perangkat keluarga).
+- **Mode Preview Gratis & Akses Penuh**: gratis mencoba topik **Hewan & Warna** di Sentuh & Dengar, Tebak Gambar (2 gambar), Potongan Gambar Level 1, dan Kartu Memori Level 1; akses penuh sekali bayar membuka semua 6 permainan serta 201 kosakata (hingga 3 perangkat keluarga).
 
 ## Menjalankan Secara Lokal
 

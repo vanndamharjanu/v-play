@@ -1,4 +1,12 @@
-import { WORDS, getPromptText, getPraiseText, PRAISE_INTRO_AUDIO, getRetryAudio } from './data/words.js';
+import {
+  WORDS,
+  FREE_PUZZLE_TYPES,
+  FREE_PUZZLE_LEVELS,
+  getPromptText,
+  getPraiseText,
+  PRAISE_INTRO_AUDIO,
+  getRetryAudio,
+} from './data/words.js';
 import { PUZZLE_LEVELS, buildPuzzleRound, getPuzzleLevelConfig } from './data/puzzle.js';
 
 const silhouetteCache = new Map();
@@ -118,6 +126,8 @@ export function createPuzzleController({
   renderCompleteWords,
   onSwitchExplore,
   onResetCategory,
+  isUnlocked = () => false,
+  onRequireUnlock = () => {},
 }) {
   const els = {
     typeButtons: [...document.querySelectorAll('[data-puzzle-type]')],
@@ -210,12 +220,169 @@ export function createPuzzleController({
     els.nextBtn.hidden = true;
   }
 
+  let activeDragCleanup = null;
+  let suppressClickUntil = 0;
+
+  function cleanupDrag() {
+    if (activeDragCleanup) {
+      const fn = activeDragCleanup;
+      activeDragCleanup = null;
+      fn();
+    }
+  }
+
+  function findBestDropSlot(clientX, clientY, dragRect) {
+    const slots = els.jigsawBoard.querySelectorAll('.jigsaw-slot:not(:disabled)');
+    let bestOverlap = null;
+    let bestArea = 0;
+
+    for (const slotEl of slots) {
+      const r = slotEl.getBoundingClientRect();
+      if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+        return { slotEl, slotIdx: Number(slotEl.dataset.slotIndex) };
+      }
+      const ox = Math.max(0, Math.min(dragRect.right, r.right) - Math.max(dragRect.left, r.left));
+      const oy = Math.max(0, Math.min(dragRect.bottom, r.bottom) - Math.max(dragRect.top, r.top));
+      const area = ox * oy;
+      if (area > bestArea) {
+        bestArea = area;
+        const minBoxArea = Math.min(dragRect.width * dragRect.height, r.width * r.height);
+        if (minBoxArea > 0 && area >= minBoxArea * 0.2) {
+          bestOverlap = { slotEl, slotIdx: Number(slotEl.dataset.slotIndex) };
+        }
+      }
+    }
+
+    return bestOverlap;
+  }
+
+  function attachPieceDrag(pieceBtn, piece, itemData, cols, rows, target) {
+    pieceBtn.addEventListener('pointerdown', (e) => {
+      if (pState.solved || pieceBtn.disabled || !e.isPrimary) return;
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      if (e.pointerType === 'mouse') e.preventDefault();
+
+      cleanupDrag();
+
+      const pointerId = e.pointerId;
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const rect = pieceBtn.getBoundingClientRect();
+      const offsetX = startX - rect.left;
+      const offsetY = startY - rect.top;
+      let dragging = false;
+      let ghost = null;
+      let hoveredSlotEl = null;
+
+      const clearHover = () => {
+        if (hoveredSlotEl) {
+          hoveredSlotEl.classList.remove('is-drop-hover');
+          hoveredSlotEl = null;
+        }
+      };
+
+      const onMove = (ev) => {
+        if (ev.pointerId !== pointerId) return;
+        const dx = ev.clientX - startX;
+        const dy = ev.clientY - startY;
+
+        if (!dragging) {
+          if (Math.hypot(dx, dy) < 8) return;
+          dragging = true;
+          pState.selectedPieceIdx = null;
+          pieceBtn.classList.add('is-dragging-source');
+          try {
+            pieceBtn.setPointerCapture?.(pointerId);
+          } catch {
+            // Ignore capture errors on unsupported synthetic events.
+          }
+
+          ghost = document.createElement('div');
+          ghost.className = 'jigsaw-piece-ghost';
+          ghost.style.width = `${rect.width}px`;
+          ghost.style.height = `${rect.height}px`;
+          ghost.appendChild(createPieceCrop(target.image, '', cols, rows, piece.col, piece.row));
+          document.body.appendChild(ghost);
+        }
+
+        const left = ev.clientX - offsetX;
+        const top = ev.clientY - offsetY;
+        ghost.style.transform = `translate3d(${left}px, ${top}px, 0) scale(1.06)`;
+
+        const dragRect = {
+          left,
+          top,
+          right: left + rect.width,
+          bottom: top + rect.height,
+          width: rect.width,
+          height: rect.height,
+        };
+        const hit = findBestDropSlot(ev.clientX, ev.clientY, dragRect);
+        const nextHover = hit ? hit.slotEl : null;
+        if (nextHover !== hoveredSlotEl) {
+          clearHover();
+          if (nextHover) {
+            nextHover.classList.add('is-drop-hover');
+            hoveredSlotEl = nextHover;
+          }
+        }
+      };
+
+      const teardown = () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointercancel', onCancel);
+        try {
+          if (pieceBtn.hasPointerCapture?.(pointerId)) {
+            pieceBtn.releasePointerCapture(pointerId);
+          }
+        } catch {
+          // Ignore release errors.
+        }
+        clearHover();
+        pieceBtn.classList.remove('is-dragging-source');
+        if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+        ghost = null;
+      };
+
+      const onUp = (ev) => {
+        if (ev.pointerId !== pointerId) return;
+        const dropSlotIdx = dragging && hoveredSlotEl ? Number(hoveredSlotEl.dataset.slotIndex) : null;
+        const wasDragging = dragging;
+        cleanupDrag();
+
+        if (wasDragging) {
+          suppressClickUntil = performance.now() + 150;
+          if (dropSlotIdx !== null) {
+            tryPlaceJigsaw(piece.index, dropSlotIdx, itemData, false);
+          }
+        }
+      };
+
+      const onCancel = (ev) => {
+        if (ev.pointerId !== pointerId) return;
+        cleanupDrag();
+      };
+
+      activeDragCleanup = teardown;
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      window.addEventListener('pointercancel', onCancel);
+    });
+  }
+
   function syncSettingsUI() {
+    const unlocked = isUnlocked();
     for (const btn of els.typeButtons) {
+      const locked = !unlocked && !FREE_PUZZLE_TYPES.has(btn.dataset.puzzleType);
       btn.setAttribute('aria-pressed', String(btn.dataset.puzzleType === pState.type));
+      btn.dataset.locked = String(locked);
     }
     for (const btn of els.levelButtons) {
-      btn.setAttribute('aria-pressed', String(Number(btn.dataset.puzzleLevel) === pState.level));
+      const lvl = Number(btn.dataset.puzzleLevel);
+      const locked = !unlocked && !FREE_PUZZLE_LEVELS.has(lvl);
+      btn.setAttribute('aria-pressed', String(lvl === pState.level));
+      btn.dataset.locked = String(locked);
     }
   }
 
@@ -241,11 +408,12 @@ export function createPuzzleController({
 
   // --- Jigsaw ---
   function renderJigsaw(itemData) {
+    cleanupDrag();
     const { target, cols, rows, pieces } = itemData;
     const cfg = getPuzzleLevelConfig(pState.level);
     const total = cols * rows;
 
-    els.questionText.textContent = 'Pasang potongan gambar pada kotak yang cocok';
+    els.questionText.textContent = 'Geser potongan gambar ke kotak yang cocok';
     els.clueText.hidden = false;
     els.clueText.textContent =
       pState.level === 3
@@ -327,7 +495,11 @@ export function createPuzzleController({
         pieceBtn.appendChild(
           createPieceCrop(target.image, `Potongan ${target.word}`, cols, rows, piece.col, piece.row, onImgErr)
         );
-        pieceBtn.addEventListener('click', (e) => handlePieceTap(piece.index, itemData, e.detail === 0));
+        attachPieceDrag(pieceBtn, piece, itemData, cols, rows, target);
+        pieceBtn.addEventListener('click', (e) => {
+          if (performance.now() < suppressClickUntil) return;
+          handlePieceTap(piece.index, itemData, e.detail === 0);
+        });
       }
       els.jigsawTray.appendChild(pieceBtn);
     }
@@ -641,6 +813,7 @@ export function createPuzzleController({
   }
 
   function renderQuestion({ autoPlay = false } = {}) {
+    cleanupDrag();
     const seq = ++pState.renderSeq;
     const itemData = getCurrentItem();
     if (!itemData) {
@@ -672,6 +845,7 @@ export function createPuzzleController({
   }
 
   function startRound({ autoPlay = false } = {}) {
+    cleanupDrag();
     const pool = getFilteredWords();
     syncSettingsUI();
 
@@ -704,25 +878,57 @@ export function createPuzzleController({
     }
   }
 
+  function setType(nextType) {
+    if (!nextType) return;
+    if (!isUnlocked() && !FREE_PUZZLE_TYPES.has(nextType)) {
+      onRequireUnlock({ type: 'puzzle-type', value: nextType });
+      return;
+    }
+    if (nextType === pState.type) return;
+    pState.type = nextType;
+    audio.stop();
+    startRound({ autoPlay: true });
+  }
+
+  function setLevel(nextLevel) {
+    if (!PUZZLE_LEVELS[nextLevel]) return;
+    if (!isUnlocked() && !FREE_PUZZLE_LEVELS.has(nextLevel)) {
+      onRequireUnlock({ type: 'puzzle-level', value: nextLevel });
+      return;
+    }
+    if (nextLevel === pState.level) return;
+    pState.level = nextLevel;
+    audio.stop();
+    startRound({ autoPlay: true });
+  }
+
+  function syncAccess(unlocked) {
+    let resetNeeded = false;
+    if (!unlocked) {
+      if (!FREE_PUZZLE_TYPES.has(pState.type)) {
+        pState.type = 'jigsaw';
+        resetNeeded = true;
+      }
+      if (!FREE_PUZZLE_LEVELS.has(pState.level)) {
+        pState.level = 1;
+        resetNeeded = true;
+      }
+    }
+    syncSettingsUI();
+    return resetNeeded;
+  }
+
+  function stop() {
+    cleanupDrag();
+  }
+
   // Event bindings
   for (const btn of els.typeButtons) {
-    btn.addEventListener('click', () => {
-      const nextType = btn.dataset.puzzleType;
-      if (!nextType || nextType === pState.type) return;
-      pState.type = nextType;
-      audio.stop();
-      startRound({ autoPlay: true });
-    });
+    btn.addEventListener('click', () => setType(btn.dataset.puzzleType));
   }
 
   for (const btn of els.levelButtons) {
-    btn.addEventListener('click', () => {
-      const nextLevel = Number(btn.dataset.puzzleLevel);
-      if (!PUZZLE_LEVELS[nextLevel] || nextLevel === pState.level) return;
-      pState.level = nextLevel;
-      audio.stop();
-      startRound({ autoPlay: true });
-    });
+    btn.addEventListener('click', () => setLevel(Number(btn.dataset.puzzleLevel)));
   }
 
   els.playBtn.addEventListener('click', () => {
@@ -752,8 +958,14 @@ export function createPuzzleController({
     onResetCategory();
   });
 
+  syncSettingsUI();
+
   return {
     startRound,
+    setType,
+    setLevel,
+    syncAccess,
+    stop,
     updateAudioStatus,
   };
 }

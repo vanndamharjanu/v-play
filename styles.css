@@ -547,11 +547,13 @@ img {
   gap: 8px;
 }
 
-.mode-tab[data-locked="true"] {
+.mode-tab[data-locked="true"],
+.choice-pill[data-locked="true"] {
   opacity: 0.86;
 }
 
-.mode-tab[data-locked="true"]::after {
+.mode-tab[data-locked="true"]::after,
+.choice-pill[data-locked="true"]::after {
   content: 'Terkunci';
   font-size: 11px;
   font-weight: 600;
@@ -560,6 +562,19 @@ img {
   border-radius: 999px;
   padding: 1px 8px;
   margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.choice-pill[data-locked="true"]::after {
+  font-size: 10px;
+  line-height: 1.2;
+  padding: 1px 6px;
+  margin-top: 0;
+}
+
+.puzzle-pill-group .choice-pill:not(.level-pill)[data-locked="true"] {
+  flex-direction: column;
+  gap: 3px;
 }
 
 .category-chip {
@@ -1432,12 +1447,19 @@ img {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  transition: border-color 150ms var(--ease), background-color 150ms var(--ease);
+  transition: transform 140ms var(--ease), border-color 150ms var(--ease), background-color 150ms var(--ease);
 }
 
 .jigsaw-slot.is-ready {
   border-color: var(--accent);
   background-color: rgba(217, 246, 250, 0.65);
+}
+
+.jigsaw-slot.is-drop-hover {
+  border-style: solid;
+  border-color: var(--pink-bright);
+  background-color: var(--pink-soft);
+  transform: scale(1.03);
 }
 
 .jigsaw-slot.is-selected {
@@ -1479,7 +1501,12 @@ img {
   border-bottom: 4px solid var(--border-lip);
   background-color: var(--bg-art);
   overflow: hidden;
-  transition: transform 140ms var(--ease), border-color 150ms var(--ease), box-shadow 150ms var(--ease);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  cursor: grab;
+  transition: transform 140ms var(--ease), border-color 150ms var(--ease), box-shadow 150ms var(--ease), opacity 140ms var(--ease);
 }
 
 .jigsaw-piece:hover:not(:disabled) {
@@ -1493,10 +1520,32 @@ img {
   box-shadow: 0 4px 10px rgba(27, 40, 44, 0.14);
 }
 
+.jigsaw-piece.is-dragging-source {
+  opacity: 0.28;
+  border-style: dashed;
+}
+
+.jigsaw-piece-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 200;
+  pointer-events: none;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--pink-bright);
+  border-bottom: 4px solid var(--pink-lip);
+  background-color: var(--bg-art);
+  overflow: hidden;
+  box-shadow: 0 12px 24px rgba(27, 40, 44, 0.24);
+  transform-origin: center center;
+  will-change: transform;
+}
+
 .jigsaw-piece.is-placed {
   border: 2px dashed rgba(27, 40, 44, 0.18);
   background-color: rgba(236, 244, 241, 0.6);
   box-shadow: none;
+  cursor: default;
 }
 
 .jigsaw-crop {

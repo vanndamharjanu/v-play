@@ -5,6 +5,12 @@ import path from 'node:path';
 import {
   WORDS,
   FREE_WORDS,
+  FREE_MODES,
+  FREE_CATEGORIES,
+  FREE_QUIZ_CHOICES,
+  FREE_PUZZLE_TYPES,
+  FREE_PUZZLE_LEVELS,
+  FREE_MEMORY_LEVELS,
   CATEGORIES,
   filterWords,
   pickQuestionChoices,
@@ -33,11 +39,18 @@ const folderCategories = [
   'shapes',
 ];
 
-test('FREE_WORDS exposes 20 preview animals and unlockCatalogWords loads all 201 entries', () => {
+test('FREE_WORDS exposes 32 preview words (animals + colors) and unlockCatalogWords loads all 201 entries', () => {
   resetToFreeWords();
-  assert.equal(FREE_WORDS.length, 20);
-  assert.equal(WORDS.length, 20);
-  assert.ok(WORDS.every((w) => w.category === 'animals'));
+  assert.equal(FREE_WORDS.length, 32);
+  assert.equal(WORDS.length, 32);
+  assert.ok(WORDS.every((w) => FREE_CATEGORIES.has(w.category)));
+  assert.equal(filterWords('animals', FREE_WORDS).length, 20);
+  assert.equal(filterWords('colors', FREE_WORDS).length, 12);
+  assert.deepEqual([...FREE_MODES].sort(), ['explore', 'memory', 'puzzle', 'quiz']);
+  assert.deepEqual([...FREE_QUIZ_CHOICES], [2]);
+  assert.deepEqual([...FREE_PUZZLE_TYPES], ['jigsaw']);
+  assert.deepEqual([...FREE_PUZZLE_LEVELS], [1]);
+  assert.deepEqual([...FREE_MEMORY_LEVELS], [1]);
   assert.equal(unlockCatalogWords(FULL_WORDS), true);
   assert.equal(WORDS.length, 201);
 

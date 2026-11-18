@@ -3,6 +3,7 @@ import {
   WORDS,
   FREE_MODES,
   FREE_CATEGORIES,
+  FREE_QUIZ_CHOICES,
   filterWords,
   buildQuizRound,
   getPromptText,
@@ -615,13 +616,22 @@ function syncAccessUI() {
       'Akses penuh aktif. Seluruh 6 permainan dan 201 kosakata sudah terbuka.';
   } else {
     els.licenseSummary.textContent =
-      'Gratis mencoba Sentuh & Dengar (Hewan). Masukkan kode lisensi dari pembelian Lynk.id untuk membuka semua 6 permainan & 201 kosakata (berlaku hingga 3 HP keluarga).';
+      'Gratis mencoba Hewan & Warna di Sentuh & Dengar, Tebak Gambar (2 gambar), Potongan Gambar Level 1, dan Kartu Memori Level 1. Masukkan kode lisensi dari pembelian Lynk.id untuk membuka semua 6 permainan & 201 kosakata (berlaku hingga 3 HP keluarga).';
   }
 
   for (const entry of modeTabs) {
     const locked = !state.unlocked && !FREE_MODES.has(entry.mode);
     entry.el.dataset.locked = String(locked);
   }
+  els.choice2Btn.dataset.locked = String(!state.unlocked && !FREE_QUIZ_CHOICES.has(2));
+  els.choice3Btn.dataset.locked = String(!state.unlocked && !FREE_QUIZ_CHOICES.has(3));
+  if (!state.unlocked && !FREE_QUIZ_CHOICES.has(state.quizChoiceCount)) {
+    state.quizChoiceCount = 2;
+    els.choice2Btn.setAttribute('aria-pressed', 'true');
+    els.choice3Btn.setAttribute('aria-pressed', 'false');
+  }
+  puzzle?.syncAccess?.(state.unlocked);
+  games?.syncAccess?.(state.unlocked);
   renderCategories();
 }
 
@@ -673,7 +683,7 @@ function lockToFreePreview() {
   if (!FREE_MODES.has(state.mode)) {
     setMode('explore');
   } else {
-    renderExplore();
+    renderActiveMode({ autoPlay: false });
   }
 }
 
@@ -685,6 +695,7 @@ function setMode(nextMode) {
   if (state.mode === nextMode) return;
   state.mode = nextMode;
   audio.stop();
+  if (puzzle) puzzle.stop();
   if (games) games.stop();
 
   const tabs = [
@@ -750,6 +761,8 @@ const controllerDeps = {
   renderCompleteWords,
   onSwitchExplore: () => setMode('explore'),
   onResetCategory: resetCategory,
+  isUnlocked: () => state.unlocked,
+  onRequireUnlock: (pending) => openLicenseModal(pending),
 };
 
 puzzle = createPuzzleController(controllerDeps);
@@ -814,6 +827,17 @@ els.licenseForm.addEventListener('submit', async (e) => {
       state.spotlightIndex = 0;
       renderCategories();
       renderActiveMode({ autoPlay: true });
+    } else if (pending?.type === 'quiz-choice') {
+      if (state.mode !== 'quiz') setMode('quiz');
+      setChoiceCount(pending.value);
+    } else if (pending?.type === 'puzzle-type') {
+      if (state.mode !== 'puzzle') setMode('puzzle');
+      puzzle?.setType?.(pending.value);
+    } else if (pending?.type === 'puzzle-level') {
+      if (state.mode !== 'puzzle') setMode('puzzle');
+      puzzle?.setLevel?.(pending.value);
+    } else if (pending?.type === 'game-level') {
+      games?.setLevel?.(pending.value);
     } else {
       state.category = 'all';
       renderCategories();
@@ -973,6 +997,10 @@ els.spotlightNext.addEventListener('click', () => {
 els.resetCategoryBtn.addEventListener('click', resetCategory);
 
 function setChoiceCount(count) {
+  if (!state.unlocked && !FREE_QUIZ_CHOICES.has(count)) {
+    openLicenseModal({ type: 'quiz-choice', value: count });
+    return;
+  }
   state.quizChoiceCount = count;
   els.choice2Btn.setAttribute('aria-pressed', String(count === 2));
   els.choice3Btn.setAttribute('aria-pressed', String(count === 3));

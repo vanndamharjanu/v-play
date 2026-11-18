@@ -1,4 +1,4 @@
-import { WORDS, getPraiseText, PRAISE_INTRO_AUDIO, getRetryAudio } from './data/words.js';
+import { WORDS, FREE_MEMORY_LEVELS, getPraiseText, PRAISE_INTRO_AUDIO, getRetryAudio } from './data/words.js';
 import {
   GAME_LEVELS,
   buildMemoryDeck,
@@ -17,6 +17,8 @@ export function createGamesController({
   renderCompleteWords,
   onSwitchExplore,
   onResetCategory,
+  isUnlocked = () => false,
+  onRequireUnlock = () => {},
 }) {
   const els = {
     panel: document.getElementById('panel-games'),
@@ -82,8 +84,12 @@ export function createGamesController({
   }
 
   function syncLevelUI() {
+    const unlocked = isUnlocked();
     for (const btn of els.levelButtons) {
-      btn.setAttribute('aria-pressed', String(Number(btn.dataset.gameLevel) === gState.level));
+      const lvl = Number(btn.dataset.gameLevel);
+      const locked = !unlocked && gState.mode === 'memory' && !FREE_MEMORY_LEVELS.has(lvl);
+      btn.setAttribute('aria-pressed', String(lvl === gState.level));
+      btn.dataset.locked = String(locked);
     }
   }
 
@@ -532,15 +538,28 @@ export function createGamesController({
     }
   }
 
+  function setLevel(nextLevel) {
+    if (!GAME_LEVELS[nextLevel]) return;
+    if (!isUnlocked() && gState.mode === 'memory' && !FREE_MEMORY_LEVELS.has(nextLevel)) {
+      onRequireUnlock({ type: 'game-level', value: nextLevel });
+      return;
+    }
+    if (nextLevel === gState.level) return;
+    gState.level = nextLevel;
+    audio.stop();
+    startRound(gState.mode, { autoPlay: true });
+  }
+
+  function syncAccess(unlocked) {
+    if (!unlocked && !FREE_MEMORY_LEVELS.has(gState.level)) {
+      gState.level = 1;
+    }
+    syncLevelUI();
+  }
+
   // Event bindings
   for (const btn of els.levelButtons) {
-    btn.addEventListener('click', () => {
-      const nextLevel = Number(btn.dataset.gameLevel);
-      if (!GAME_LEVELS[nextLevel] || nextLevel === gState.level) return;
-      gState.level = nextLevel;
-      audio.stop();
-      startRound(gState.mode, { autoPlay: true });
-    });
+    btn.addEventListener('click', () => setLevel(Number(btn.dataset.gameLevel)));
   }
 
   els.playBtn.addEventListener('click', () => {
@@ -574,8 +593,12 @@ export function createGamesController({
     onResetCategory();
   });
 
+  syncLevelUI();
+
   return {
     startRound,
+    setLevel,
+    syncAccess,
     stop,
     updateAudioStatus,
   };

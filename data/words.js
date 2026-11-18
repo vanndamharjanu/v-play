@@ -13,8 +13,12 @@ export const CATEGORIES = [
   { id: 'shapes', label: 'Bentuk', thumb: './assets/images/shapes/star.webp' },
 ];
 
-export const FREE_MODES = new Set(['explore']);
-export const FREE_CATEGORIES = new Set(['animals']);
+export const FREE_MODES = new Set(['explore', 'quiz', 'puzzle', 'memory']);
+export const FREE_CATEGORIES = new Set(['animals', 'colors']);
+export const FREE_QUIZ_CHOICES = new Set([2]);
+export const FREE_PUZZLE_TYPES = new Set(['jigsaw']);
+export const FREE_PUZZLE_LEVELS = new Set([1]);
+export const FREE_MEMORY_LEVELS = new Set([1]);
 
 export const wordEntry = (category, id, word, indo, pronun, imageFile = `${id}.webp`) => ({
   id,
@@ -50,6 +54,18 @@ export const FREE_WORDS = [
   wordEntry('animals', 'tiger', 'Tiger', 'harimau', 'TAI-guhr'),
   wordEntry('animals', 'turtle', 'Turtle', 'kura-kura', 'TUR-tuhl'),
   wordEntry('animals', 'zebra', 'Zebra', 'zebra', 'ZI-bruh'),
+  wordEntry('colors', 'black', 'Black', 'hitam', 'blak'),
+  wordEntry('colors', 'blue', 'Blue', 'biru', 'blu'),
+  wordEntry('colors', 'brown', 'Brown', 'cokelat', 'braun'),
+  wordEntry('colors', 'gold', 'Gold', 'emas', 'gould'),
+  wordEntry('colors', 'green', 'Green', 'hijau', 'grin'),
+  wordEntry('colors', 'grey', 'Grey', 'abu-abu', 'grei'),
+  wordEntry('colors', 'color-orange', 'Orange', 'oranye', 'OR-inj', 'orange.webp'),
+  wordEntry('colors', 'pink', 'Pink', 'merah muda', 'pingk'),
+  wordEntry('colors', 'purple', 'Purple', 'ungu', 'PUR-puhl'),
+  wordEntry('colors', 'red', 'Red', 'merah', 'red'),
+  wordEntry('colors', 'white', 'White', 'putih', 'wait'),
+  wordEntry('colors', 'yellow', 'Yellow', 'kuning', 'YEL-ou'),
 ];
 
 export const WORDS = [...FREE_WORDS];
