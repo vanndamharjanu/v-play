@@ -10,7 +10,23 @@ import {
   onRequestPatch as handleAdminAffiliatesPatch,
   onRequestDelete as handleAdminAffiliatesDelete,
 } from '../functions/api/admin/affiliates.js';
+import {
+  onRequestGet as handleAdminTenantsGet,
+  onRequestPost as handleAdminTenantsPost,
+  onRequestPatch as handleAdminTenantsPatch,
+  onRequestDelete as handleAdminTenantsDelete,
+} from '../functions/api/admin/tenants.js';
+import {
+  onRequestGet as handleBrandSetupGet,
+  onRequestPut as handleBrandSetupPut,
+} from '../functions/api/brand/setup.js';
 import { jsonResponse } from '../functions/_lib/license.js';
+import {
+  applyTenantHtmlRewriter,
+  isTenantExpired,
+  renderExpiredTenantResponse,
+  resolveTenantByRequest,
+} from '../functions/_lib/tenant.js';
 
 const API_ROUTES = {
   '/api/config': { GET: handleConfig },
@@ -24,6 +40,16 @@ const API_ROUTES = {
     POST: handleAdminAffiliatesPost,
     PATCH: handleAdminAffiliatesPatch,
     DELETE: handleAdminAffiliatesDelete,
+  },
+  '/api/admin/tenants': {
+    GET: handleAdminTenantsGet,
+    POST: handleAdminTenantsPost,
+    PATCH: handleAdminTenantsPatch,
+    DELETE: handleAdminTenantsDelete,
+  },
+  '/api/brand/setup': {
+    GET: handleBrandSetupGet,
+    PUT: handleBrandSetupPut,
   },
 };
 
@@ -45,7 +71,17 @@ export default {
     }
 
     if (env.ASSETS) {
-      return env.ASSETS.fetch(request);
+      const assetRes = await env.ASSETS.fetch(request);
+      if ((url.pathname === '/' || url.pathname === '/index.html') && assetRes.ok) {
+        const tenant = await resolveTenantByRequest(request, env);
+        if (tenant) {
+          if (isTenantExpired(tenant)) {
+            return renderExpiredTenantResponse(tenant);
+          }
+          return applyTenantHtmlRewriter(assetRes, tenant, request.url);
+        }
+      }
+      return assetRes;
     }
 
     return new Response('Not found', { status: 404 });

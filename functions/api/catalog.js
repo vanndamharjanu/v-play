@@ -1,11 +1,17 @@
 import { FULL_WORDS } from '../_lib/catalog.js';
 import { jsonResponse, extractBearerToken, sha256Hex } from '../_lib/license.js';
+import { isTenantExpired, resolveTenantByRequest } from '../_lib/tenant.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
 
   if (!env.DB) {
     return jsonResponse({ ok: false, error: 'Database belum terhubung.' }, 500);
+  }
+
+  const tenant = await resolveTenantByRequest(request, env);
+  if (tenant && isTenantExpired(tenant)) {
+    return jsonResponse({ ok: false, error: 'Langganan brand ini sedang tidak aktif.' }, 403);
   }
 
   const token = extractBearerToken(request);
@@ -15,7 +21,7 @@ export async function onRequestGet(context) {
 
   const tokenHash = await sha256Hex(token);
   const row = await env.DB.prepare(
-    `SELECT d.id AS dev_id, d.license_id, l.max_devices, l.status
+    `SELECT d.id AS dev_id, d.license_id, l.max_devices, l.status, l.tenant_id
      FROM license_devices d
      JOIN licenses l ON l.id = d.license_id
      WHERE d.token_hash = ?
@@ -24,7 +30,10 @@ export async function onRequestGet(context) {
     .bind(tokenHash)
     .first();
 
-  if (!row || row.status !== 'active') {
+  const expectedTenantId = tenant ? tenant.id : null;
+  const rowTenantId = row?.tenant_id ?? null;
+
+  if (!row || row.status !== 'active' || rowTenantId !== expectedTenantId) {
     return jsonResponse({ ok: false, error: 'Akses tidak valid atau sudah dinonaktifkan.' }, 401);
   }
 

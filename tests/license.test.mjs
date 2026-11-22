@@ -16,6 +16,7 @@ const rootDir = path.resolve(import.meta.dirname, '..');
 const migrationSql = [
   fs.readFileSync(path.join(rootDir, 'migrations/0001_licenses.sql'), 'utf8'),
   fs.readFileSync(path.join(rootDir, 'migrations/0002_affiliates.sql'), 'utf8'),
+  fs.readFileSync(path.join(rootDir, 'migrations/0003_tenants.sql'), 'utf8'),
 ].join('\n');
 
 function createMockD1() {
@@ -451,4 +452,161 @@ test('affiliate admin CRUD, ref config override, and click tracking work via wor
     {}
   );
   assert.equal(delRes.status, 200);
+});
+
+test('white-label multi-tenant setup, license isolation, and expiry enforcement work via worker', async () => {
+  const DB = createMockD1();
+  const env = {
+    DB,
+    LYNK_MERCHANT_KEY: 'main_merchant_key',
+    LYNK_PRODUCT_URL: 'https://lynk.id/funplay/main',
+    ADMIN_SECRET: 'super_secret_admin_123',
+    ASSETS: {
+      async fetch() {
+        return new Response('<html><head><title>FunPlay</title></head><body><span class="brand-name">FunPlay</span></body></html>', {
+          status: 200,
+          headers: { 'Content-Type': 'text/html' },
+        });
+      },
+    },
+  };
+
+  // Admin creates white-label tenant
+  const createTenantRes = await worker.fetch(
+    new Request('https://funplay.web.id/api/admin/tenants', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer super_secret_admin_123',
+      },
+      body: JSON.stringify({
+        hostname: 'www.belajarkids.id',
+        brandName: 'BelajarKids',
+        emailFrom: 'BelajarKids <halo@belajarkids.id>',
+        expiresAt: '2099-12-31',
+      }),
+    }),
+    env,
+    {}
+  );
+  assert.equal(createTenantRes.status, 201);
+  const createdTenant = await createTenantRes.json();
+  assert.equal(createdTenant.tenant.hostname, 'belajarkids.id');
+  const portalToken = createdTenant.tenant.portalToken;
+  assert.ok(portalToken.startsWith('fpb_'));
+
+  // Partner updates brand via portal token
+  const updateBrandRes = await worker.fetch(
+    new Request('https://belajarkids.id/api/brand/setup', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${portalToken}`,
+      },
+      body: JSON.stringify({
+        brandName: 'BelajarKids ID',
+        tagline: 'Belajar ceria setiap hari',
+        themePreset: 'berry',
+        primaryColor: '#B83280',
+        accentColor: '#38BDF8',
+        lynkUrl: 'https://lynk.id/belajarkids/full',
+        lynkMerchantKey: 'partner_merchant_secret',
+      }),
+    }),
+    env,
+    {}
+  );
+  assert.equal(updateBrandRes.status, 200);
+  const updatedBrand = await updateBrandRes.json();
+  assert.equal(updatedBrand.tenant.brandName, 'BelajarKids ID');
+  assert.equal(updatedBrand.tenant.hasMerchantKey, true);
+
+  // Config on partner domain returns partner lynkUrl and brandName
+  const partnerCfgRes = await worker.fetch(
+    new Request('https://belajarkids.id/api/config'),
+    env,
+    {}
+  );
+  assert.equal(partnerCfgRes.status, 200);
+  const partnerCfg = await partnerCfgRes.json();
+  assert.equal(partnerCfg.lynkUrl, 'https://lynk.id/belajarkids/full');
+  assert.equal(partnerCfg.brandName, 'BelajarKids ID');
+  assert.equal(partnerCfg.isWhiteLabel, true);
+
+  // Partner webhook uses partner merchant key and binds license to tenant_id
+  const payloadObj = {
+    event: 'payment.received',
+    data: {
+      message_id: 'msg_partner_1',
+      message_data: {
+        refId: 'BK-REF-001',
+        customer: { name: 'Siti', email: 'siti@example.com', phone: '08123' },
+        items: [{ title: 'BelajarKids Full' }],
+        totals: { grandTotal: 49000 },
+      },
+    },
+  };
+  const rawBody = JSON.stringify(payloadObj);
+  const partnerSig = await hmacSha256Hex('partner_merchant_secret', rawBody);
+
+  const partnerHookRes = await worker.fetch(
+    new Request('https://belajarkids.id/api/webhook/lynk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-lynk-signature': partnerSig },
+      body: rawBody,
+    }),
+    env,
+    {}
+  );
+  assert.equal(partnerHookRes.status, 200);
+
+  const licRow = DB.sqlite
+    .prepare("SELECT code, tenant_id FROM licenses WHERE ref_id = 'BK-REF-001'")
+    .get();
+  assert.ok(licRow && licRow.tenant_id === createdTenant.tenant.id);
+
+  // Partner license cannot activate on main FunPlay domain
+  const crossActRes = await worker.fetch(
+    new Request('https://funplay.web.id/api/license/activate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: licRow.code, deviceId: 'device_12345678' }),
+    }),
+    env,
+    {}
+  );
+  assert.equal(crossActRes.status, 404);
+
+  // Partner license activates cleanly on partner domain
+  const okActRes = await worker.fetch(
+    new Request('https://belajarkids.id/api/license/activate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: licRow.code, deviceId: 'device_12345678' }),
+    }),
+    env,
+    {}
+  );
+  assert.equal(okActRes.status, 200);
+
+  // Expiring tenant blocks both HTML and API
+  const expireRes = await worker.fetch(
+    new Request('https://funplay.web.id/api/admin/tenants', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer super_secret_admin_123',
+      },
+      body: JSON.stringify({ hostname: 'belajarkids.id', expiresAt: '2020-01-01' }),
+    }),
+    env,
+    {}
+  );
+  assert.equal(expireRes.status, 200);
+
+  const blockedHtmlRes = await worker.fetch(new Request('https://belajarkids.id/'), env, {});
+  assert.equal(blockedHtmlRes.status, 403);
+
+  const blockedCfgRes = await worker.fetch(new Request('https://belajarkids.id/api/config'), env, {});
+  assert.equal(blockedCfgRes.status, 403);
 });

@@ -5,11 +5,18 @@ import {
   generateLicenseCode,
   sendLicenseEmail,
 } from '../../_lib/license.js';
+import { isTenantExpired, resolveTenantByRequest } from '../../_lib/tenant.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const tenant = await resolveTenantByRequest(request, env);
 
-  if (!env.DB || !env.LYNK_MERCHANT_KEY) {
+  if (tenant && isTenantExpired(tenant)) {
+    return jsonResponse({ ok: false, error: 'Langganan brand ini sedang tidak aktif.' }, 403);
+  }
+
+  const merchantKey = tenant ? tenant.lynk_merchant_key : env.LYNK_MERCHANT_KEY;
+  if (!env.DB || !merchantKey) {
     return jsonResponse({ ok: false, error: 'Server licensing belum terkonfigurasi.' }, 500);
   }
 
@@ -46,7 +53,7 @@ export async function onRequestPost(context) {
     rawBody,
     payload,
     signatureHeader: signature,
-    merchantKey: env.LYNK_MERCHANT_KEY,
+    merchantKey,
   });
 
   if (!validSig) {
@@ -108,12 +115,13 @@ export async function onRequestPost(context) {
   }
 
   if (!code) {
+    const tenantId = tenant ? tenant.id : null;
     for (let attempt = 0; attempt < 3; attempt++) {
       const candidate = generateLicenseCode();
       try {
         await env.DB.prepare(
-          `INSERT INTO licenses (code, ref_id, customer_email, customer_name, customer_phone, product_name, amount, max_devices)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+          `INSERT INTO licenses (code, ref_id, customer_email, customer_name, customer_phone, product_name, amount, max_devices, tenant_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
           .bind(
             candidate,
@@ -123,7 +131,8 @@ export async function onRequestPost(context) {
             order.phone,
             order.productName,
             order.amount,
-            maxDevices
+            maxDevices,
+            tenantId
           )
           .run();
         code = candidate;
@@ -134,18 +143,23 @@ export async function onRequestPost(context) {
     }
   }
 
-  const appUrl = env.APP_PUBLIC_URL || new URL(request.url).origin;
+  const appUrl = tenant ? new URL(request.url).origin : (env.APP_PUBLIC_URL || new URL(request.url).origin);
+  const fromEmail = tenant ? (tenant.email_from || env.EMAIL_FROM) : env.EMAIL_FROM;
+  const brandName = tenant ? tenant.brand_name : 'FunPlay';
+  const primaryColor = tenant ? tenant.primary_color : '#007C91';
   let emailSent = false;
   if (!duplicate) {
     try {
       const mailRes = await sendLicenseEmail({
         apiKey: env.RESEND_API_KEY,
-        fromEmail: env.EMAIL_FROM,
+        fromEmail,
         toEmail: order.email,
         name: order.name,
         code,
         appUrl,
         maxDevices,
+        brandName,
+        primaryColor,
       });
       emailSent = Boolean(mailRes.sent);
     } catch {

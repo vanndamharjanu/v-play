@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Pengaturan Brand — White-Label</title>
+  <style>
+    :root {
+      --bg: #f4f9f7;
+      --card: #ffffff;
+      --ink: #1b282c;
+      --muted: #52676d;
+      --teal: #007c91;
+      --teal-dark: #005b6b;
+      --border: #cfe8e5;
+      --green: #86dc62;
+      --green-border: #59b338;
+      --danger: #b42318;
+      --danger-bg: #fef3f2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+      padding: 16px 14px 48px;
+    }
+    .wrap { max-width: 1040px; margin: 0 auto; }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    h1 { margin: 0; font-size: clamp(20px, 4vw, 24px); color: var(--teal-dark); }
+    .sub { margin: 2px 0 0; font-size: 14px; color: var(--muted); }
+    .card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .card h2 { margin: 0 0 12px; font-size: 17px; color: var(--teal-dark); }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (min-width: 840px) {
+      body { padding: 24px 20px 56px; }
+      .grid { grid-template-columns: 1.2fr 0.8fr; }
+      .preview-sticky { position: sticky; top: 18px; }
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 12px; }
+    .field { flex: 1 1 220px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+    label { font-size: 13px; font-weight: 700; color: var(--teal-dark); }
+    .hint { font-size: 12px; color: var(--muted); }
+    input[type="text"], input[type="url"], input[type="password"] {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 16px;
+      color: var(--ink);
+      background: #fff;
+    }
+    input:focus { outline: none; border-color: var(--teal); }
+    input[type="file"] { font-size: 14px; max-width: 100%; }
+    button, .btn-link {
+      cursor: pointer;
+      min-height: 44px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 10px 16px;
+      border: 2px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--green); border-color: var(--green-border); color: var(--ink); width: 100%; }
+    .btn-teal { background: var(--teal); color: #fff; }
+    .btn-ghost { background: #fff; border-color: var(--border); color: var(--teal-dark); }
+    .btn-sm { min-height: 36px; padding: 6px 12px; font-size: 13px; }
+    .presets {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .preset-btn {
+      min-height: 44px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      justify-content: flex-start;
+    }
+    .preset-btn.active { border-color: var(--teal); background: #eaf9fc; }
+    .swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      display: inline-block;
+      flex-shrink: 0;
+      border: 1px solid rgba(0,0,0,0.12);
+    }
+    .color-pickers { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 8px; }
+    .color-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: #f9fcfb;
+      flex: 1 1 160px;
+    }
+    input[type="color"] {
+      width: 40px;
+      height: 36px;
+      border: none;
+      background: none;
+      padding: 0;
+      cursor: pointer;
+    }
+    .icon-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .icon-preview {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      object-fit: cover;
+      background: #fff;
+      flex-shrink: 0;
+    }
+    .webhook-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      background: #f4f9f7;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .webhook-box code {
+      font-size: 13px;
+      word-break: break-all;
+      flex: 1 1 200px;
+      color: var(--teal-dark);
+    }
+    /* Live Preview Widget */
+    .preview-frame {
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #f8fbf6;
+    }
+    .pv-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 12px 14px;
+      background: #fff;
+      border-bottom: 1.5px solid #e2eeeb;
+    }
+    .pv-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .pv-icon { width: 32px; height: 32px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+    .pv-name { font-weight: 800; font-size: 15px; color: #1b282c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pv-sub { font-size: 11px; color: #52676d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pv-pill {
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      background: var(--pv-primary, #007c91);
+      flex-shrink: 0;
+    }
+    .pv-body { padding: 16px 14px; }
+    .pv-card {
+      background: #fff;
+      border: 2px solid #cfe0db;
+      border-radius: 14px;
+      padding: 14px;
+      text-align: center;
+    }
+    .pv-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--pv-soft, #d9f6fa);
+      color: var(--pv-primary, #007c91);
+      margin-bottom: 8px;
+    }
+    .pv-cta {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      background: var(--pv-accent, #86dc62);
+      border-bottom: 3px solid rgba(0,0,0,0.18);
+      color: #1b282c;
+    }
+    .status { margin-top: 10px; font-size: 13px; font-weight: 700; min-height: 20px; }
+    .status.err { color: var(--danger); }
+    .status.ok { color: #166534; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Pengaturan Brand White-Label</h1>
+        <p class="sub" id="domain-label">Atur nama brand, icon, warna tema, dan checkout Lynk.id Anda.</p>
+      </div>
+      <div class="row">
+        <a href="/" class="btn-link btn-ghost btn-sm">Lihat Web</a>
+        <button id="logout-btn" class="btn-ghost btn-sm" hidden>Keluar</button>
+      </div>
+    </header>
+
+    <section id="auth-card" class="card">
+      <h2>Masuk Portal Brand</h2>
+      <form id="auth-form" class="row" style="align-items:flex-end;">
+        <div class="field" style="margin-bottom:0;">
+          <label for="portal-token">Token Portal Brand</label>
+          <input id="portal-token" type="password" placeholder="Masukkan token dari admin (fpb_...)" required>
+        </div>
+        <button type="submit" class="btn-teal">Buka Pengaturan</button>
+      </form>
+      <div id="auth-status" class="status"></div>
+    </section>
+
+    <main id="portal-main" class="grid" hidden>
+      <form id="setup-form">
+        <section class="card">
+          <h2>1. Identitas &amp; Icon Brand</h2>
+          <div class="field">
+            <label for="brand-name">Nama Brand</label>
+            <input id="brand-name" type="text" maxlength="60" placeholder="Contoh: BelajarKids" required>
+          </div>
+          <div class="field">
+            <label for="brand-tagline">Tagline Singkat</label>
+            <input id="brand-tagline" type="text" maxlength="80" placeholder="Contoh: Kosakata anak 1-5 tahun">
+          </div>
+          <div class="field">
+            <label for="icon-file">Upload Logo / Icon (Otomatis jadi Favicon juga)</label>
+            <div class="icon-row">
+              <img id="icon-preview" class="icon-preview" alt="Preview Icon">
+              <div style="flex:1 1 200px;">
+                <input id="icon-file" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+                <div class="hint">PNG/JPG/SVG (otomatis diperkecil agar ringan di semua HP). Kosongkan untuk pakai inisial otomatis.</div>
+              </div>
+              <button type="button" id="reset-icon-btn" class="btn-ghost btn-sm">Pakai Inisial</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>2. Warna Tema</h2>
+          <label style="display:block;margin-bottom:8px;">Pilih Preset Cepat:</label>
+          <div id="presets-wrap" class="presets"></div>
+
+          <label style="display:block;margin-bottom:8px;">Atau Custom Sendiri:</label>
+          <div class="color-pickers">
+            <label class="color-box" for="primary-color">
+              <input id="primary-color" type="color" value="#007C91">
+              <span>
+                <strong>Warna Utama</strong><br>
+                <span id="primary-hex" class="hint">#007C91</span>
+              </span>
+            </label>
+            <label class="color-box" for="accent-color">
+              <input id="accent-color" type="color" value="#86DC62">
+              <span>
+                <strong>Warna Tombol</strong><br>
+                <span id="accent-hex" class="hint">#86DC62</span>
+              </span>
+            </label>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>3. Checkout &amp; Webhook Lynk.id</h2>
+          <div class="field">
+            <label for="lynk-url">Link Produk Lynk.id Anda</label>
+            <input id="lynk-url" type="url" placeholder="https://lynk.id/akun-anda/produk">
+          </div>
+          <div class="field">
+            <label for="merchant-key">Lynk.id Merchant Key (untuk Webhook)</label>
+            <input id="merchant-key" type="password" placeholder="Isi untuk mengatur/mengganti Merchant Key">
+            <span id="merchant-status" class="hint"></span>
+          </div>
+          <label style="display:block;margin-bottom:6px;">URL Webhook (Tempel di Pengaturan Webhook Lynk.id):</label>
+          <div class="webhook-box">
+            <code id="webhook-url">https://...</code>
+            <button type="button" id="copy-webhook-btn" class="btn-ghost btn-sm">Salin URL</button>
+          </div>
+          <button type="submit" class="btn-primary">Simpan Perubahan Brand</button>
+          <div id="save-status" class="status"></div>
+        </section>
+      </form>
+
+      <aside class="card preview-sticky">
+        <h2>Live Preview</h2>
+        <p class="hint" style="margin-top:0;margin-bottom:12px;">Tampilan langsung di HP &amp; browser saat pengunjung membuka domain Anda.</p>
+        <div id="preview-frame" class="preview-frame">
+          <div class="pv-topbar">
+            <div class="pv-brand">
+              <img id="pv-icon" class="pv-icon" alt="">
+              <div style="min-width:0;">
+                <div id="pv-name" class="pv-name">Brand Anda</div>
+                <div id="pv-sub" class="pv-sub">Kosakata anak 1-5 tahun</div>
+              </div>
+            </div>
+            <span class="pv-pill">Buka Semua</span>
+          </div>
+          <div class="pv-body">
+            <div class="pv-card">
+              <span class="pv-badge">Preview Gratis</span>
+              <div style="font-weight:800;font-size:16px;">Main &amp; belajar bahasa Inggris</div>
+              <div style="font-size:13px;color:#52676d;margin-top:4px;">Sentuh gambar untuk mendengar pelafalan katanya.</div>
+              <span class="pv-cta">Beli Akses Penuh</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const TOKEN_KEY = 'funplay_brand_portal_token_v1';
+    let currentIconUrl = '';
+    let currentPreset = 'teal';
+    let presetsList = [];
+
+    const els = {
+      domainLabel: document.getElementById('domain-label'),
+      authCard: document.getElementById('auth-card'),
+      authForm: document.getElementById('auth-form'),
+      portalToken: document.getElementById('portal-token'),
+      authStatus: document.getElementById('auth-status'),
+      logoutBtn: document.getElementById('logout-btn'),
+      portalMain: document.getElementById('portal-main'),
+      setupForm: document.getElementById('setup-form'),
+      brandName: document.getElementById('brand-name'),
+      brandTagline: document.getElementById('brand-tagline'),
+      iconFile: document.getElementById('icon-file'),
+      iconPreview: document.getElementById('icon-preview'),
+      resetIconBtn: document.getElementById('reset-icon-btn'),
+      presetsWrap: document.getElementById('presets-wrap'),
+      primaryColor: document.getElementById('primary-color'),
+      accentColor: document.getElementById('accent-color'),
+      primaryHex: document.getElementById('primary-hex'),
+      accentHex: document.getElementById('accent-hex'),
+      lynkUrl: document.getElementById('lynk-url'),
+      merchantKey: document.getElementById('merchant-key'),
+      merchantStatus: document.getElementById('merchant-status'),
+      webhookUrl: document.getElementById('webhook-url'),
+      copyWebhookBtn: document.getElementById('copy-webhook-btn'),
+      saveStatus: document.getElementById('save-status'),
+      previewFrame: document.getElementById('preview-frame'),
+      pvIcon: document.getElementById('pv-icon'),
+      pvName: document.getElementById('pv-name'),
+      pvSub: document.getElementById('pv-sub'),
+    };
+
+    function getToken() { return sessionStorage.getItem(TOKEN_KEY) || ''; }
+    function setStatus(el, msg, isErr = false) {
+      el.textContent = msg || '';
+      el.className = 'status' + (msg ? (isErr ? ' err' : ' ok') : '');
+    }
+
+    function buildInitialSvg(name, primary, accent) {
+      const ch = (String(name || 'B').trim().charAt(0) || 'B').toUpperCase();
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="10" fill="${primary}"/><circle cx="24.5" cy="7.5" r="3.2" fill="${accent}"/><text x="16" y="21.5" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" font-weight="800" fill="#FFFFFF">${ch.replace(/[<>&"]/g, '')}</text></svg>`;
+      return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    }
+
+    function updatePreview() {
+      const name = els.brandName.value.trim() || 'Brand Anda';
+      const sub = els.brandTagline.value.trim() || 'Kosakata anak 1-5 tahun';
+      const primary = els.primaryColor.value;
+      const accent = els.accentColor.value;
+
+      els.primaryHex.textContent = primary.toUpperCase();
+      els.accentHex.textContent = accent.toUpperCase();
+      els.pvName.textContent = name;
+      els.pvSub.textContent = sub;
+
+      const iconSrc = currentIconUrl || buildInitialSvg(name, primary, accent);
+      els.iconPreview.src = iconSrc;
+      els.pvIcon.src = iconSrc;
+
+      els.previewFrame.style.setProperty('--pv-primary', primary);
+      els.previewFrame.style.setProperty('--pv-accent', accent);
+      els.previewFrame.style.setProperty('--pv-soft', `${primary}1A`);
+
+      for (const btn of els.presetsWrap.querySelectorAll('.preset-btn')) {
+        btn.classList.toggle('active', btn.dataset.preset === currentPreset);
+      }
+    }
+
+    function renderPresets() {
+      els.presetsWrap.innerHTML = '';
+      for (const p of presetsList) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'preset-btn';
+        btn.dataset.preset = p.id;
+        const sw = document.createElement('span');
+        sw.className = 'swatch';
+        sw.style.background = `linear-gradient(135deg, ${p.primary} 55%, ${p.accent} 55%)`;
+        const lbl = document.createElement('span');
+        lbl.textContent = p.label;
+        btn.append(sw, lbl);
+        btn.addEventListener('click', () => {
+          currentPreset = p.id;
+          els.primaryColor.value = p.primary;
+          els.accentColor.value = p.accent;
+          updatePreview();
+        });
+        els.presetsWrap.appendChild(btn);
+      }
+    }
+
+    async function api(method, body) {
+      const res = await fetch('/api/brand/setup', {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Error ${res.status}`);
+      }
+      return data;
+    }
+
+    async function unlock() {
+      try {
+        const data = await api('GET');
+        const t = data.tenant;
+        presetsList = data.presets || [];
+        renderPresets();
+
+        els.domainLabel.textContent = `Domain aktif: ${t.hostname}` + (t.expiresAt ? ` (berlaku s.d. ${t.expiresAt})` : '');
+        els.brandName.value = t.brandName || '';
+        els.brandTagline.value = t.tagline || '';
+        currentIconUrl = t.iconUrl || '';
+        currentPreset = t.themePreset || 'teal';
+        els.primaryColor.value = t.primaryColor || '#007C91';
+        els.accentColor.value = t.accentColor || '#86DC62';
+        els.lynkUrl.value = t.lynkUrl || '';
+        els.merchantKey.value = '';
+        els.merchantStatus.textContent = t.hasMerchantKey
+          ? 'Merchant Key sudah tersimpan (kosongkan jika tidak ingin mengubah).'
+          : 'Belum ada Merchant Key. Wajib diisi agar webhook Lynk.id aktif.';
+        els.webhookUrl.textContent = t.webhookUrl;
+
+        updatePreview();
+        els.authCard.hidden = true;
+        els.portalMain.hidden = false;
+        els.logoutBtn.hidden = false;
+        setStatus(els.authStatus, '');
+      } catch (e) {
+        sessionStorage.removeItem(TOKEN_KEY);
+        els.authCard.hidden = false;
+        els.portalMain.hidden = true;
+        els.logoutBtn.hidden = true;
+        setStatus(els.authStatus, e.message, true);
+      }
+    }
+
+    els.authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      sessionStorage.setItem(TOKEN_KEY, els.portalToken.value.trim());
+      await unlock();
+    });
+
+    els.logoutBtn.addEventListener('click', () => {
+      sessionStorage.removeItem(TOKEN_KEY);
+      els.portalToken.value = '';
+      els.authCard.hidden = false;
+      els.portalMain.hidden = true;
+      els.logoutBtn.hidden = true;
+    });
+
+    els.brandName.addEventListener('input', updatePreview);
+    els.brandTagline.addEventListener('input', updatePreview);
+    els.primaryColor.addEventListener('input', () => { currentPreset = 'custom'; updatePreview(); });
+    els.accentColor.addEventListener('input', () => { currentPreset = 'custom'; updatePreview(); });
+
+    els.resetIconBtn.addEventListener('click', () => {
+      currentIconUrl = '';
+      els.iconFile.value = '';
+      updatePreview();
+    });
+
+    els.iconFile.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = String(reader.result || '');
+        if (file.type === 'image/svg+xml' && result.length <= 65000) {
+          currentIconUrl = result;
+          updatePreview();
+          return;
+        }
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 128;
+          canvas.height = 128;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, 128, 128);
+          currentIconUrl = canvas.toDataURL('image/png');
+          updatePreview();
+        };
+        img.src = result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    els.copyWebhookBtn.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(els.webhookUrl.textContent);
+      els.copyWebhookBtn.textContent = 'Tersalin!';
+      setTimeout(() => { els.copyWebhookBtn.textContent = 'Salin URL'; }, 1500);
+    });
+
+    els.setupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setStatus(els.saveStatus, '');
+      try {
+        const res = await api('PUT', {
+          brandName: els.brandName.value.trim(),
+          tagline: els.brandTagline.value.trim(),
+          iconUrl: currentIconUrl,
+          faviconUrl: currentIconUrl,
+          themePreset: currentPreset,
+          primaryColor: els.primaryColor.value,
+          accentColor: els.accentColor.value,
+          lynkUrl: els.lynkUrl.value.trim(),
+          lynkMerchantKey: els.merchantKey.value.trim(),
+        });
+        els.merchantKey.value = '';
+        els.merchantStatus.textContent = res.tenant.hasMerchantKey
+          ? 'Merchant Key tersimpan.'
+          : 'Belum ada Merchant Key.';
+        setStatus(els.saveStatus, 'Pengaturan brand berhasil disimpan dan langsung aktif!');
+      } catch (e) {
+        setStatus(els.saveStatus, e.message, true);
+      }
+    });
+
+    if (getToken()) {
+      unlock();
+    }
+  </script>
+</body>
+</html>

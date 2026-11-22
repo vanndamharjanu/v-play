@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Admin Affiliate — FunPlay</title>
+  <title>Admin FunPlay — Affiliate &amp; White-Label</title>
   <style>
     :root {
       --bg: #f4f9f7;
@@ -26,61 +26,73 @@
       background: var(--bg);
       color: var(--ink);
       line-height: 1.5;
-      padding: 24px 16px 48px;
+      padding: 16px 14px 48px;
     }
-    .wrap { max-width: 960px; margin: 0 auto; }
+    @media (min-width: 768px) {
+      body { padding: 24px 20px 56px; }
+    }
+    .wrap { max-width: 1020px; margin: 0 auto; }
     header {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
-    h1 { margin: 0; font-size: 24px; color: var(--teal-dark); }
+    h1 { margin: 0; font-size: clamp(20px, 4vw, 24px); color: var(--teal-dark); }
     .sub { margin: 2px 0 0; font-size: 14px; color: var(--muted); }
     .card {
       background: var(--card);
       border: 2px solid var(--border);
       border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 18px;
+      padding: 18px;
+      margin-bottom: 16px;
     }
     .card h2 { margin: 0 0 12px; font-size: 17px; color: var(--teal-dark); }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .tab-btn {
+      min-height: 44px;
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: #fff;
+      color: var(--teal-dark);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .tab-btn.active { background: var(--teal); border-color: var(--teal); color: #fff; }
     .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
     .field { flex: 1 1 200px; display: flex; flex-direction: column; gap: 4px; }
     label { font-size: 13px; font-weight: 600; color: var(--teal-dark); }
-    input[type="text"], input[type="url"], input[type="password"] {
+    input[type="text"], input[type="url"], input[type="password"], input[type="date"] {
       width: 100%;
+      min-height: 44px;
       padding: 10px 12px;
       border: 1.5px solid var(--border);
       border-radius: 10px;
-      font-size: 14px;
+      font-size: 16px;
       color: var(--ink);
       background: #fff;
     }
     input:focus { outline: none; border-color: var(--teal); }
     button {
       cursor: pointer;
+      min-height: 44px;
       border-radius: 10px;
       font-size: 14px;
       font-weight: 700;
       padding: 10px 16px;
       border: 2px solid transparent;
     }
-    .btn-primary {
-      background: var(--green);
-      border-color: var(--green-border);
-      color: var(--ink);
-    }
-    .btn-teal {
-      background: var(--teal);
-      color: #fff;
-    }
+    .btn-primary { background: var(--green); border-color: var(--green-border); color: var(--ink); }
+    .btn-teal { background: var(--teal); color: #fff; }
     .btn-ghost {
       background: #fff;
       border-color: var(--border);
       color: var(--teal-dark);
+      min-height: 36px;
       padding: 6px 10px;
       font-size: 12px;
     }
@@ -88,21 +100,17 @@
       background: var(--danger-bg);
       border-color: #fecdca;
       color: var(--danger);
+      min-height: 36px;
       padding: 6px 10px;
       font-size: 12px;
     }
-    .status {
-      margin-top: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      min-height: 18px;
-    }
+    .status { margin-top: 10px; font-size: 13px; font-weight: 600; min-height: 18px; }
     .status.err { color: var(--danger); }
     .status.ok { color: #166534; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 680px; }
     th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #e6f2f0; vertical-align: middle; }
     th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); }
-    .table-wrap { overflow-x: auto; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     code.badge {
       display: inline-block;
       padding: 3px 8px;
@@ -123,7 +131,7 @@
     .pill.off { background: #f1f5f9; color: #475569; }
     .actions { display: flex; gap: 6px; flex-wrap: wrap; }
     .truncate {
-      max-width: 220px;
+      max-width: 200px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -137,10 +145,11 @@
   <div class="wrap">
     <header>
       <div>
-        <h1>Admin Affiliate FunPlay</h1>
+        <h1>Admin FunPlay</h1>
+        <p class="sub">Kelola Affiliate &amp; Partner White-Label dari satu dashboard.</p>
       </div>
       <div class="actions">
-        <a href="/" class="btn-ghost" style="text-decoration:none;">Buka FunPlay</a>
+        <a href="/" class="btn-ghost" style="text-decoration:none;display:inline-flex;align-items:center;">Buka FunPlay</a>
         <button id="logout-btn" class="btn-ghost" hidden>Keluar</button>
       </div>
     </header>
@@ -149,7 +158,8 @@
       <h2>Masuk Admin</h2>
       <form id="auth-form" class="row">
         <div class="field">
-          <input id="admin-secret" type="password" placeholder="Masukkan Kode Akses" required>
+          <label for="admin-secret">ADMIN_SECRET</label>
+          <input id="admin-secret" type="password" placeholder="Masukkan ADMIN_SECRET Cloudflare" required>
         </div>
         <button type="submit" class="btn-teal">Buka Dashboard</button>
       </form>
@@ -157,47 +167,100 @@
     </section>
 
     <main id="dashboard" hidden>
-      <section class="card">
-        <h2>Tambah Afiliator Baru</h2>
-        <form id="create-form" class="row">
-          <div class="field">
-            <label for="aff-name">Nama Afiliator</label>
-            <input id="aff-name" type="text" placeholder="Contoh: Mama Ani" required>
-          </div>
-          <div class="field">
-            <label for="aff-lynk">Link Affiliate Lynk.id</label>
-            <input id="aff-lynk" type="url" placeholder="https://lynk.id/..." required>
-          </div>
-          <div class="field" style="max-width: 190px;">
-            <label for="aff-code">Kode Ref (Opsional)</label>
-            <input id="aff-code" type="text" placeholder="Kosong = acak">
-          </div>
-          <button type="submit" class="btn-primary">Buat Link Ref</button>
-        </form>
-        <div id="create-status" class="status"></div>
-      </section>
+      <div class="tabs">
+        <button type="button" class="tab-btn active" data-tab="affiliates">Affiliate</button>
+        <button type="button" class="tab-btn" data-tab="tenants">White-Label (Tenant)</button>
+      </div>
 
-      <section class="card">
-        <h2>Daftar Afiliator</h2>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Afiliator</th>
-                <th>Kode</th>
-                <th>Link Share FunPlay</th>
-                <th>Link Lynk.id</th>
-                <th>Kunjungan</th>
-                <th>Klik Beli</th>
-                <th>Status</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="aff-tbody"></tbody>
-          </table>
-        </div>
-        <div id="list-status" class="status"></div>
-      </section>
+      <div id="panel-affiliates">
+        <section class="card">
+          <h2>Tambah Afiliator Baru</h2>
+          <form id="create-form" class="row">
+            <div class="field">
+              <label for="aff-name">Nama Afiliator</label>
+              <input id="aff-name" type="text" placeholder="Contoh: Mama Ani" required>
+            </div>
+            <div class="field">
+              <label for="aff-lynk">Link Affiliate Lynk.id</label>
+              <input id="aff-lynk" type="url" placeholder="https://lynk.id/..." required>
+            </div>
+            <div class="field" style="max-width: 190px;">
+              <label for="aff-code">Kode Ref (Opsional)</label>
+              <input id="aff-code" type="text" placeholder="Kosong = acak">
+            </div>
+            <button type="submit" class="btn-primary">Buat Link Ref</button>
+          </form>
+          <div id="create-status" class="status"></div>
+        </section>
+
+        <section class="card">
+          <h2>Daftar Afiliator</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Afiliator</th>
+                  <th>Kode</th>
+                  <th>Link Share</th>
+                  <th>Link Lynk.id</th>
+                  <th>Kunjungan</th>
+                  <th>Klik Beli</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="aff-tbody"></tbody>
+            </table>
+          </div>
+          <div id="list-status" class="status"></div>
+        </section>
+      </div>
+
+      <div id="panel-tenants" hidden>
+        <section class="card">
+          <h2>Tambah Partner White-Label</h2>
+          <form id="tenant-form" class="row">
+            <div class="field">
+              <label for="t-host">Domain Partner</label>
+              <input id="t-host" type="text" placeholder="Contoh: belajarkids.id" required>
+            </div>
+            <div class="field">
+              <label for="t-brand">Nama Brand</label>
+              <input id="t-brand" type="text" placeholder="Contoh: BelajarKids" required>
+            </div>
+            <div class="field">
+              <label for="t-email">Email Pengirim Resend (Opsional)</label>
+              <input id="t-email" type="text" placeholder="BelajarKids <halo@belajarkids.id>">
+            </div>
+            <div class="field" style="max-width: 190px;">
+              <label for="t-exp">Masa Aktif s.d. (Opsional)</label>
+              <input id="t-exp" type="date">
+            </div>
+            <button type="submit" class="btn-primary">Buat Tenant</button>
+          </form>
+          <div id="tenant-create-status" class="status"></div>
+        </section>
+
+        <section class="card">
+          <h2>Daftar Partner White-Label</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Domain</th>
+                  <th>Brand</th>
+                  <th>Portal Brand</th>
+                  <th>Berlaku s.d.</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tenant-tbody"></tbody>
+            </table>
+          </div>
+          <div id="tenant-list-status" class="status"></div>
+        </section>
+      </div>
     </main>
   </div>
 
@@ -210,6 +273,8 @@
       authStatus: document.getElementById('auth-status'),
       dashboard: document.getElementById('dashboard'),
       logoutBtn: document.getElementById('logout-btn'),
+      panelAffiliates: document.getElementById('panel-affiliates'),
+      panelTenants: document.getElementById('panel-tenants'),
       createForm: document.getElementById('create-form'),
       affName: document.getElementById('aff-name'),
       affLynk: document.getElementById('aff-lynk'),
@@ -217,19 +282,24 @@
       createStatus: document.getElementById('create-status'),
       affTbody: document.getElementById('aff-tbody'),
       listStatus: document.getElementById('list-status'),
+      tenantForm: document.getElementById('tenant-form'),
+      tHost: document.getElementById('t-host'),
+      tBrand: document.getElementById('t-brand'),
+      tEmail: document.getElementById('t-email'),
+      tExp: document.getElementById('t-exp'),
+      tenantCreateStatus: document.getElementById('tenant-create-status'),
+      tenantTbody: document.getElementById('tenant-tbody'),
+      tenantListStatus: document.getElementById('tenant-list-status'),
     };
 
-    function getSecret() {
-      return sessionStorage.getItem(SECRET_KEY) || '';
-    }
-
+    function getSecret() { return sessionStorage.getItem(SECRET_KEY) || ''; }
     function setStatus(el, msg, isErr = false) {
       el.textContent = msg || '';
       el.className = 'status' + (msg ? (isErr ? ' err' : ' ok') : '');
     }
 
-    async function api(method, body) {
-      const res = await fetch('/api/admin/affiliates', {
+    async function api(path, method, body) {
+      const res = await fetch(path, {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -246,13 +316,24 @@
       return data;
     }
 
-    function renderRows(affiliates) {
+    for (const btn of document.querySelectorAll('.tab-btn')) {
+      btn.addEventListener('click', () => {
+        for (const b of document.querySelectorAll('.tab-btn')) {
+          b.classList.toggle('active', b === btn);
+        }
+        const isAff = btn.dataset.tab === 'affiliates';
+        els.panelAffiliates.hidden = !isAff;
+        els.panelTenants.hidden = isAff;
+      });
+    }
+
+    function renderAffiliates(affiliates) {
       els.affTbody.innerHTML = '';
       if (!affiliates.length) {
         const tr = document.createElement('tr');
         const td = document.createElement('td');
         td.colSpan = 8;
-        td.textContent = 'Belum ada afiliator. Tambahkan di form atas.';
+        td.textContent = 'Belum ada afiliator.';
         td.style.color = '#52676d';
         tr.appendChild(td);
         els.affTbody.appendChild(tr);
@@ -262,21 +343,14 @@
       for (const aff of affiliates) {
         const shareUrl = `${window.location.origin}/?ref=${encodeURIComponent(aff.code)}`;
         const tr = document.createElement('tr');
-
-        const tdName = document.createElement('td');
-        tdName.textContent = aff.name;
-
+        const tdName = document.createElement('td'); tdName.textContent = aff.name;
         const tdCode = document.createElement('td');
-        const codeEl = document.createElement('code');
-        codeEl.className = 'badge';
-        codeEl.textContent = aff.code;
+        const codeEl = document.createElement('code'); codeEl.className = 'badge'; codeEl.textContent = aff.code;
         tdCode.appendChild(codeEl);
 
         const tdShare = document.createElement('td');
         const copyBtn = document.createElement('button');
-        copyBtn.type = 'button';
-        copyBtn.className = 'btn-ghost';
-        copyBtn.textContent = 'Salin Link';
+        copyBtn.type = 'button'; copyBtn.className = 'btn-ghost'; copyBtn.textContent = 'Salin Link';
         copyBtn.addEventListener('click', async () => {
           await navigator.clipboard.writeText(shareUrl);
           copyBtn.textContent = 'Tersalin!';
@@ -286,18 +360,12 @@
 
         const tdLynk = document.createElement('td');
         const lynkA = document.createElement('a');
-        lynkA.href = aff.lynkUrl;
-        lynkA.target = '_blank';
-        lynkA.rel = 'noopener noreferrer';
-        lynkA.className = 'truncate';
-        lynkA.textContent = aff.lynkUrl;
+        lynkA.href = aff.lynkUrl; lynkA.target = '_blank'; lynkA.rel = 'noopener noreferrer';
+        lynkA.className = 'truncate'; lynkA.textContent = aff.lynkUrl;
         tdLynk.appendChild(lynkA);
 
-        const tdClicks = document.createElement('td');
-        tdClicks.textContent = String(aff.clicks);
-
-        const tdCheckout = document.createElement('td');
-        tdCheckout.textContent = String(aff.checkoutClicks);
+        const tdClicks = document.createElement('td'); tdClicks.textContent = String(aff.clicks);
+        const tdCheckout = document.createElement('td'); tdCheckout.textContent = String(aff.checkoutClicks);
 
         const tdStatus = document.createElement('td');
         const pill = document.createElement('span');
@@ -306,36 +374,26 @@
         tdStatus.appendChild(pill);
 
         const tdActions = document.createElement('td');
-        const actions = document.createElement('div');
-        actions.className = 'actions';
-
+        const actions = document.createElement('div'); actions.className = 'actions';
         const toggleBtn = document.createElement('button');
-        toggleBtn.type = 'button';
-        toggleBtn.className = 'btn-ghost';
+        toggleBtn.type = 'button'; toggleBtn.className = 'btn-ghost';
         toggleBtn.textContent = aff.active ? 'Nonaktifkan' : 'Aktifkan';
         toggleBtn.addEventListener('click', async () => {
           try {
-            await api('PATCH', { code: aff.code, active: !aff.active });
-            await loadAffiliates();
-          } catch (e) {
-            setStatus(els.listStatus, e.message, true);
-          }
+            await api('/api/admin/affiliates', 'PATCH', { code: aff.code, active: !aff.active });
+            await loadAll();
+          } catch (e) { setStatus(els.listStatus, e.message, true); }
         });
 
         const delBtn = document.createElement('button');
-        delBtn.type = 'button';
-        delBtn.className = 'btn-danger';
-        delBtn.textContent = 'Hapus';
+        delBtn.type = 'button'; delBtn.className = 'btn-danger'; delBtn.textContent = 'Hapus';
         delBtn.addEventListener('click', async () => {
           if (!confirm(`Hapus afiliator ${aff.name} (${aff.code})?`)) return;
           try {
-            await api('DELETE', { code: aff.code });
-            await loadAffiliates();
-          } catch (e) {
-            setStatus(els.listStatus, e.message, true);
-          }
+            await api('/api/admin/affiliates', 'DELETE', { code: aff.code });
+            await loadAll();
+          } catch (e) { setStatus(els.listStatus, e.message, true); }
         });
-
         actions.append(toggleBtn, delBtn);
         tdActions.appendChild(actions);
 
@@ -344,15 +402,101 @@
       }
     }
 
-    async function loadAffiliates() {
+    function renderTenants(tenants) {
+      els.tenantTbody.innerHTML = '';
+      if (!tenants.length) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 6;
+        td.textContent = 'Belum ada partner white-label.';
+        td.style.color = '#52676d';
+        tr.appendChild(td);
+        els.tenantTbody.appendChild(tr);
+        return;
+      }
+
+      for (const t of tenants) {
+        const tr = document.createElement('tr');
+        const tdHost = document.createElement('td');
+        const hostA = document.createElement('a');
+        hostA.href = `https://${t.hostname}`; hostA.target = '_blank'; hostA.rel = 'noopener noreferrer';
+        hostA.textContent = t.hostname;
+        tdHost.appendChild(hostA);
+
+        const tdBrand = document.createElement('td');
+        tdBrand.textContent = t.brandName;
+
+        const tdPortal = document.createElement('td');
+        const copyTokBtn = document.createElement('button');
+        copyTokBtn.type = 'button'; copyTokBtn.className = 'btn-ghost'; copyTokBtn.textContent = 'Salin Token';
+        copyTokBtn.addEventListener('click', async () => {
+          await navigator.clipboard.writeText(t.portalToken);
+          copyTokBtn.textContent = 'Tersalin!';
+          setTimeout(() => { copyTokBtn.textContent = 'Salin Token'; }, 1500);
+        });
+        const copyPortalBtn = document.createElement('button');
+        copyPortalBtn.type = 'button'; copyPortalBtn.className = 'btn-ghost'; copyPortalBtn.textContent = 'Salin URL Portal';
+        copyPortalBtn.addEventListener('click', async () => {
+          await navigator.clipboard.writeText(`https://${t.hostname}/brand-setup.html`);
+          copyPortalBtn.textContent = 'Tersalin!';
+          setTimeout(() => { copyPortalBtn.textContent = 'Salin URL Portal'; }, 1500);
+        });
+        const pWrap = document.createElement('div'); pWrap.className = 'actions';
+        pWrap.append(copyPortalBtn, copyTokBtn);
+        tdPortal.appendChild(pWrap);
+
+        const tdExp = document.createElement('td');
+        tdExp.textContent = t.expiresAt || 'Selamanya';
+
+        const tdStatus = document.createElement('td');
+        const pill = document.createElement('span');
+        pill.className = 'pill ' + (!t.expired ? 'on' : 'off');
+        pill.textContent = !t.expired ? 'Aktif' : (t.active ? 'Kedaluwarsa' : 'Nonaktif');
+        tdStatus.appendChild(pill);
+
+        const tdActions = document.createElement('td');
+        const actions = document.createElement('div'); actions.className = 'actions';
+        const toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button'; toggleBtn.className = 'btn-ghost';
+        toggleBtn.textContent = t.active ? 'Nonaktifkan' : 'Aktifkan';
+        toggleBtn.addEventListener('click', async () => {
+          try {
+            await api('/api/admin/tenants', 'PATCH', { hostname: t.hostname, active: !t.active });
+            await loadAll();
+          } catch (e) { setStatus(els.tenantListStatus, e.message, true); }
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button'; delBtn.className = 'btn-danger'; delBtn.textContent = 'Hapus';
+        delBtn.addEventListener('click', async () => {
+          if (!confirm(`Hapus tenant ${t.hostname}?`)) return;
+          try {
+            await api('/api/admin/tenants', 'DELETE', { hostname: t.hostname });
+            await loadAll();
+          } catch (e) { setStatus(els.tenantListStatus, e.message, true); }
+        });
+        actions.append(toggleBtn, delBtn);
+        tdActions.appendChild(actions);
+
+        tr.append(tdHost, tdBrand, tdPortal, tdExp, tdStatus, tdActions);
+        els.tenantTbody.appendChild(tr);
+      }
+    }
+
+    async function loadAll() {
       setStatus(els.listStatus, '');
-      const data = await api('GET');
-      renderRows(data.affiliates || []);
+      setStatus(els.tenantListStatus, '');
+      const [affRes, tenRes] = await Promise.all([
+        api('/api/admin/affiliates', 'GET'),
+        api('/api/admin/tenants', 'GET'),
+      ]);
+      renderAffiliates(affRes.affiliates || []);
+      renderTenants(tenRes.tenants || []);
     }
 
     async function unlock() {
       try {
-        await loadAffiliates();
+        await loadAll();
         els.authCard.hidden = true;
         els.dashboard.hidden = false;
         els.logoutBtn.hidden = false;
@@ -384,7 +528,7 @@
       e.preventDefault();
       setStatus(els.createStatus, '');
       try {
-        const res = await api('POST', {
+        const res = await api('/api/admin/affiliates', 'POST', {
           name: els.affName.value.trim(),
           lynkUrl: els.affLynk.value.trim(),
           code: els.affCode.value.trim(),
@@ -392,9 +536,27 @@
         els.createForm.reset();
         const link = `${window.location.origin}/?ref=${encodeURIComponent(res.affiliate.code)}`;
         setStatus(els.createStatus, `Berhasil! Link share: ${link}`);
-        await loadAffiliates();
+        await loadAll();
       } catch (e) {
         setStatus(els.createStatus, e.message, true);
+      }
+    });
+
+    els.tenantForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setStatus(els.tenantCreateStatus, '');
+      try {
+        const res = await api('/api/admin/tenants', 'POST', {
+          hostname: els.tHost.value.trim(),
+          brandName: els.tBrand.value.trim(),
+          emailFrom: els.tEmail.value.trim(),
+          expiresAt: els.tExp.value.trim(),
+        });
+        els.tenantForm.reset();
+        setStatus(els.tenantCreateStatus, `Tenant ${res.tenant.hostname} dibuat! Token portal: ${res.tenant.portalToken}`);
+        await loadAll();
+      } catch (e) {
+        setStatus(els.tenantCreateStatus, e.message, true);
       }
     });
 

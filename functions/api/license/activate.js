@@ -6,12 +6,18 @@ import {
   generateDeviceToken,
   sha256Hex,
 } from '../../_lib/license.js';
+import { isTenantExpired, resolveTenantByRequest } from '../../_lib/tenant.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
 
   if (!env.DB) {
     return jsonResponse({ ok: false, error: 'Database belum terhubung.' }, 500);
+  }
+
+  const tenant = await resolveTenantByRequest(request, env);
+  if (tenant && isTenantExpired(tenant)) {
+    return jsonResponse({ ok: false, error: 'Langganan brand ini sedang tidak aktif.' }, 403);
   }
 
   let body;
@@ -28,12 +34,15 @@ export async function onRequestPost(context) {
   }
 
   const license = await env.DB.prepare(
-    'SELECT id, code, max_devices, status FROM licenses WHERE code = ? LIMIT 1'
+    'SELECT id, code, max_devices, status, tenant_id FROM licenses WHERE code = ? LIMIT 1'
   )
     .bind(code)
     .first();
 
-  if (!license) {
+  const expectedTenantId = tenant ? tenant.id : null;
+  const licenseTenantId = license?.tenant_id ?? null;
+
+  if (!license || licenseTenantId !== expectedTenantId) {
     return jsonResponse(
       { ok: false, error: 'Kode lisensi tidak ditemukan. Periksa huruf dan tanda hubungnya.' },
       404

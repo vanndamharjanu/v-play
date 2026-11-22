@@ -180,12 +180,27 @@ export function escapeHtml(str) {
     .replaceAll("'", '&#39;');
 }
 
-export async function sendLicenseEmail({ apiKey, fromEmail, toEmail, name, code, appUrl, maxDevices = 3 }) {
+export async function sendLicenseEmail({
+  apiKey,
+  fromEmail,
+  toEmail,
+  name,
+  code,
+  appUrl,
+  maxDevices = 3,
+  brandName = 'FunPlay',
+  primaryColor = '#007C91',
+}) {
   if (!apiKey || !fromEmail || !toEmail) {
     return { sent: false, skipped: true };
   }
+  const brand = String(brandName || 'FunPlay').trim() || 'FunPlay';
+  const accent = /^#[0-9a-fA-F]{6}$/.test(String(primaryColor || '').trim())
+    ? String(primaryColor).trim()
+    : '#007C91';
   const displayName = String(name || '').trim() || 'Bapak/Ibu';
   const targetUrl = String(appUrl || 'https://funplay.web.id').trim() || 'https://funplay.web.id';
+  const safeBrand = escapeHtml(brand);
   const safeName = escapeHtml(displayName);
   const safeCode = escapeHtml(code);
   const safeUrl = escapeHtml(targetUrl);
@@ -193,7 +208,7 @@ export async function sendLicenseEmail({ apiKey, fromEmail, toEmail, name, code,
   const text = [
     `Halo ${displayName},`,
     '',
-    `Berikut kode akses FunPlay Anda (berlaku hingga ${maxDevices} perangkat):`,
+    `Berikut kode akses ${brand} Anda (berlaku hingga ${maxDevices} perangkat):`,
     code,
     '',
     'Cara aktivasi:',
@@ -204,32 +219,32 @@ export async function sendLicenseEmail({ apiKey, fromEmail, toEmail, name, code,
 
   const html = `
     <div style="background:#F4F9F7;padding:24px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1B282C;line-height:1.55">
-      <div style="max-width:520px;margin:0 auto;background:#FFFFFF;border:2px solid #CFE8E5;border-top:6px solid #007C91;border-radius:18px;padding:26px 24px">
+      <div style="max-width:520px;margin:0 auto;background:#FFFFFF;border:2px solid #CFE8E5;border-top:6px solid ${accent};border-radius:18px;padding:26px 24px">
         <div style="margin-bottom:16px">
           <span style="display:inline-block;padding:4px 10px;border-radius:8px;background:#FDEBF2;color:#9E1949;font-size:12px;font-weight:700">Akses Penuh Sekali Bayar</span>
-          <h2 style="margin:10px 0 4px;font-size:22px;line-height:1.25;color:#005B6B">Kode Akses FunPlay</h2>
+          <h2 style="margin:10px 0 4px;font-size:22px;line-height:1.25;color:${accent}">Kode Akses ${safeBrand}</h2>
           <p style="margin:0;font-size:13px;color:#475F66">Main &amp; Belajar Bahasa Inggris Anak 1-5 Tahun</p>
         </div>
 
         <p style="margin:16px 0 8px;font-size:15px">Halo <strong>${safeName}</strong>,</p>
         <p style="margin:0 0 18px;font-size:15px;color:#1B282C">
-          Terima kasih! Akses penuh FunPlay untuk <strong>${maxDevices} perangkat</strong> keluarga Anda sudah siap dipakai.
+          Terima kasih! Akses penuh ${safeBrand} untuk <strong>${maxDevices} perangkat</strong> keluarga Anda sudah siap dipakai.
         </p>
 
-        <div style="margin:18px 0;padding:18px 16px;border-radius:14px;background:#EAF9FC;border:2px solid #34C5D9;text-align:center">
-          <div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#005B6B">KODE LISENSI ANDA</div>
+        <div style="margin:18px 0;padding:18px 16px;border-radius:14px;background:#EAF9FC;border:2px solid ${accent};text-align:center">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:${accent}">KODE LISENSI ANDA</div>
           <div style="margin-top:6px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:22px;font-weight:800;letter-spacing:2px;color:#004754;user-select:all">${safeCode}</div>
         </div>
 
         <div style="margin:18px 0 20px;text-align:center">
-          <a href="${safeUrl}" style="display:inline-block;padding:12px 24px;border-radius:12px;background:#86DC62;border:2px solid #59B338;border-bottom-width:4px;color:#1B282C;font-size:15px;font-weight:700;text-decoration:none">Buka FunPlay Sekarang</a>
+          <a href="${safeUrl}" style="display:inline-block;padding:12px 24px;border-radius:12px;background:#86DC62;border:2px solid #59B338;border-bottom-width:4px;color:#1B282C;font-size:15px;font-weight:700;text-decoration:none">Buka ${safeBrand} Sekarang</a>
         </div>
 
         <div style="padding:14px 16px;border-radius:12px;background:#F8FBF6;border:1px solid #DCEEEB;font-size:13px;color:#1B282C">
-          <strong style="color:#005B6B">Cara mengaktifkan:</strong>
+          <strong style="color:${accent}">Cara mengaktifkan:</strong>
           <ol style="margin:8px 0 0;padding-left:18px">
             <li style="margin-bottom:4px">Salin kode lisensi di atas.</li>
-            <li style="margin-bottom:4px">Buka FunPlay lewat tombol hijau di atas atau kunjungi <a href="${safeUrl}" style="color:#005B6B">${safeUrl}</a>.</li>
+            <li style="margin-bottom:4px">Buka ${safeBrand} lewat tombol hijau di atas atau kunjungi <a href="${safeUrl}" style="color:${accent}">${safeUrl}</a>.</li>
             <li>Ketuk <strong>Buka Semua</strong>, tempel kode, lalu tekan <strong>Aktifkan</strong>.</li>
           </ol>
         </div>
@@ -250,7 +265,7 @@ export async function sendLicenseEmail({ apiKey, fromEmail, toEmail, name, code,
     body: JSON.stringify({
       from: fromEmail,
       to: [toEmail],
-      subject: `Kode Akses FunPlay - ${code}`,
+      subject: `Kode Akses ${brand} - ${code}`,
       text,
       html,
     }),
