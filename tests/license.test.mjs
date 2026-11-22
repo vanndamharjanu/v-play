@@ -13,7 +13,10 @@ import { onRequest as middlewareHandler } from '../functions/_middleware.js';
 import worker from '../src/worker.js';
 
 const rootDir = path.resolve(import.meta.dirname, '..');
-const migrationSql = fs.readFileSync(path.join(rootDir, 'migrations/0001_licenses.sql'), 'utf8');
+const migrationSql = [
+  fs.readFileSync(path.join(rootDir, 'migrations/0001_licenses.sql'), 'utf8'),
+  fs.readFileSync(path.join(rootDir, 'migrations/0002_affiliates.sql'), 'utf8'),
+].join('\n');
 
 function createMockD1() {
   const sqlite = new DatabaseSync(':memory:');
@@ -330,4 +333,122 @@ test('sendLicenseEmail builds branded card html and plain text payload', async (
   } finally {
     globalThis.fetch = prevFetch;
   }
+});
+
+test('affiliate admin CRUD, ref config override, and click tracking work via worker', async () => {
+  const DB = createMockD1();
+  const env = {
+    DB,
+    LYNK_PRODUCT_URL: 'https://lynk.id/funplay/default',
+    ADMIN_SECRET: 'super_secret_admin_123',
+  };
+
+  // Unauthorized admin request rejected
+  const unauthRes = await worker.fetch(
+    new Request('https://funplay.web.id/api/admin/affiliates'),
+    env,
+    {}
+  );
+  assert.equal(unauthRes.status, 401);
+
+  // Create affiliate with auto-generated code
+  const createRes = await worker.fetch(
+    new Request('https://funplay.web.id/api/admin/affiliates', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer super_secret_admin_123',
+      },
+      body: JSON.stringify({
+        name: 'Mama Ani',
+        lynkUrl: 'https://lynk.id/funplay/aff-ani',
+      }),
+    }),
+    env,
+    {}
+  );
+  assert.equal(createRes.status, 201);
+  const created = await createRes.json();
+  assert.equal(created.ok, true);
+  assert.ok(created.affiliate.code.startsWith('MAMA-'));
+
+  const refCode = created.affiliate.code;
+
+  // Config with ?ref=...&track=1 returns affiliate lynkUrl and increments clicks
+  const cfgAffRes = await worker.fetch(
+    new Request(`https://funplay.web.id/api/config?ref=${encodeURIComponent(refCode.toLowerCase())}&track=1`),
+    env,
+    {}
+  );
+  assert.equal(cfgAffRes.status, 200);
+  const cfgAff = await cfgAffRes.json();
+  assert.equal(cfgAff.lynkUrl, 'https://lynk.id/funplay/aff-ani');
+  assert.equal(cfgAff.affiliateCode, refCode);
+
+  // Checkout click tracking increments checkout_clicks
+  const clickRes = await worker.fetch(
+    new Request('https://funplay.web.id/api/affiliate/click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: refCode }),
+    }),
+    env,
+    {}
+  );
+  assert.equal(clickRes.status, 200);
+  const clickData = await clickRes.json();
+  assert.equal(clickData.tracked, true);
+
+  // List shows clicks=1 and checkoutClicks=1
+  const listRes = await worker.fetch(
+    new Request('https://funplay.web.id/api/admin/affiliates', {
+      headers: { Authorization: 'Bearer super_secret_admin_123' },
+    }),
+    env,
+    {}
+  );
+  assert.equal(listRes.status, 200);
+  const listData = await listRes.json();
+  assert.equal(listData.affiliates.length, 1);
+  assert.equal(listData.affiliates[0].clicks, 1);
+  assert.equal(listData.affiliates[0].checkoutClicks, 1);
+
+  // Deactivate affiliate -> /api/config falls back to default LYNK_PRODUCT_URL
+  const patchRes = await worker.fetch(
+    new Request('https://funplay.web.id/api/admin/affiliates', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer super_secret_admin_123',
+      },
+      body: JSON.stringify({ code: refCode, active: false }),
+    }),
+    env,
+    {}
+  );
+  assert.equal(patchRes.status, 200);
+
+  const fallbackRes = await worker.fetch(
+    new Request(`https://funplay.web.id/api/config?ref=${encodeURIComponent(refCode)}`),
+    env,
+    {}
+  );
+  const fallbackData = await fallbackRes.json();
+  assert.equal(fallbackData.lynkUrl, 'https://lynk.id/funplay/default');
+  assert.equal(fallbackData.affiliateCode, '');
+
+  // Delete affiliate
+  const delRes = await worker.fetch(
+    new Request('https://funplay.web.id/api/admin/affiliates', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer super_secret_admin_123',
+      },
+      body: JSON.stringify({ code: refCode }),
+    }),
+    env,
+    {}
+  );
+  assert.equal(delRes.status, 200);
 });

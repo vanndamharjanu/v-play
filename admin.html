@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Affiliate — FunPlay</title>
+  <style>
+    :root {
+      --bg: #f4f9f7;
+      --card: #ffffff;
+      --ink: #1b282c;
+      --muted: #52676d;
+      --teal: #007c91;
+      --teal-dark: #005b6b;
+      --border: #cfe8e5;
+      --green: #86dc62;
+      --green-border: #59b338;
+      --danger: #b42318;
+      --danger-bg: #fef3f2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+      padding: 24px 16px 48px;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    h1 { margin: 0; font-size: 24px; color: var(--teal-dark); }
+    .sub { margin: 2px 0 0; font-size: 14px; color: var(--muted); }
+    .card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .card h2 { margin: 0 0 12px; font-size: 17px; color: var(--teal-dark); }
+    .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+    .field { flex: 1 1 200px; display: flex; flex-direction: column; gap: 4px; }
+    label { font-size: 13px; font-weight: 600; color: var(--teal-dark); }
+    input[type="text"], input[type="url"], input[type="password"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      color: var(--ink);
+      background: #fff;
+    }
+    input:focus { outline: none; border-color: var(--teal); }
+    button {
+      cursor: pointer;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 10px 16px;
+      border: 2px solid transparent;
+    }
+    .btn-primary {
+      background: var(--green);
+      border-color: var(--green-border);
+      color: var(--ink);
+    }
+    .btn-teal {
+      background: var(--teal);
+      color: #fff;
+    }
+    .btn-ghost {
+      background: #fff;
+      border-color: var(--border);
+      color: var(--teal-dark);
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    .btn-danger {
+      background: var(--danger-bg);
+      border-color: #fecdca;
+      color: var(--danger);
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    .status {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      min-height: 18px;
+    }
+    .status.err { color: var(--danger); }
+    .status.ok { color: #166534; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #e6f2f0; vertical-align: middle; }
+    th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); }
+    .table-wrap { overflow-x: auto; }
+    code.badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #eaf9fc;
+      color: var(--teal-dark);
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .pill.on { background: #dcfce7; color: #166534; }
+    .pill.off { background: #f1f5f9; color: #475569; }
+    .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .truncate {
+      max-width: 220px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Admin Affiliate FunPlay</h1>
+        <p class="sub">Buat link referral FunPlay untuk tiap afiliator &amp; arahkan checkout ke link Lynk.id mereka.</p>
+      </div>
+      <div class="actions">
+        <a href="/" class="btn-ghost" style="text-decoration:none;">Buka FunPlay</a>
+        <button id="logout-btn" class="btn-ghost" hidden>Keluar</button>
+      </div>
+    </header>
+
+    <section id="auth-card" class="card">
+      <h2>Masuk Admin</h2>
+      <form id="auth-form" class="row">
+        <div class="field">
+          <label for="admin-secret">ADMIN_SECRET</label>
+          <input id="admin-secret" type="password" placeholder="Masukkan ADMIN_SECRET Cloudflare" required>
+        </div>
+        <button type="submit" class="btn-teal">Buka Dashboard</button>
+      </form>
+      <div id="auth-status" class="status"></div>
+    </section>
+
+    <main id="dashboard" hidden>
+      <section class="card">
+        <h2>Tambah Afiliator Baru</h2>
+        <form id="create-form" class="row">
+          <div class="field">
+            <label for="aff-name">Nama Afiliator</label>
+            <input id="aff-name" type="text" placeholder="Contoh: Mama Ani" required>
+          </div>
+          <div class="field">
+            <label for="aff-lynk">Link Affiliate Lynk.id</label>
+            <input id="aff-lynk" type="url" placeholder="https://lynk.id/..." required>
+          </div>
+          <div class="field" style="max-width: 190px;">
+            <label for="aff-code">Kode Ref (Opsional)</label>
+            <input id="aff-code" type="text" placeholder="Kosong = acak">
+          </div>
+          <button type="submit" class="btn-primary">Buat Link Ref</button>
+        </form>
+        <div id="create-status" class="status"></div>
+      </section>
+
+      <section class="card">
+        <h2>Daftar Afiliator</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Afiliator</th>
+                <th>Kode</th>
+                <th>Link Share FunPlay</th>
+                <th>Link Lynk.id</th>
+                <th>Kunjungan</th>
+                <th>Klik Beli</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="aff-tbody"></tbody>
+          </table>
+        </div>
+        <div id="list-status" class="status"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const SECRET_KEY = 'funplay_admin_secret_v1';
+    const els = {
+      authCard: document.getElementById('auth-card'),
+      authForm: document.getElementById('auth-form'),
+      adminSecret: document.getElementById('admin-secret'),
+      authStatus: document.getElementById('auth-status'),
+      dashboard: document.getElementById('dashboard'),
+      logoutBtn: document.getElementById('logout-btn'),
+      createForm: document.getElementById('create-form'),
+      affName: document.getElementById('aff-name'),
+      affLynk: document.getElementById('aff-lynk'),
+      affCode: document.getElementById('aff-code'),
+      createStatus: document.getElementById('create-status'),
+      affTbody: document.getElementById('aff-tbody'),
+      listStatus: document.getElementById('list-status'),
+    };
+
+    function getSecret() {
+      return sessionStorage.getItem(SECRET_KEY) || '';
+    }
+
+    function setStatus(el, msg, isErr = false) {
+      el.textContent = msg || '';
+      el.className = 'status' + (msg ? (isErr ? ' err' : ' ok') : '');
+    }
+
+    async function api(method, body) {
+      const res = await fetch('/api/admin/affiliates', {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getSecret()}`,
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        const err = new Error(data.error || `Error ${res.status}`);
+        err.status = res.status;
+        throw err;
+      }
+      return data;
+    }
+
+    function renderRows(affiliates) {
+      els.affTbody.innerHTML = '';
+      if (!affiliates.length) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 8;
+        td.textContent = 'Belum ada afiliator. Tambahkan di form atas.';
+        td.style.color = '#52676d';
+        tr.appendChild(td);
+        els.affTbody.appendChild(tr);
+        return;
+      }
+
+      for (const aff of affiliates) {
+        const shareUrl = `${window.location.origin}/?ref=${encodeURIComponent(aff.code)}`;
+        const tr = document.createElement('tr');
+
+        const tdName = document.createElement('td');
+        tdName.textContent = aff.name;
+
+        const tdCode = document.createElement('td');
+        const codeEl = document.createElement('code');
+        codeEl.className = 'badge';
+        codeEl.textContent = aff.code;
+        tdCode.appendChild(codeEl);
+
+        const tdShare = document.createElement('td');
+        const copyBtn = document.createElement('button');
+        copyBtn.type = 'button';
+        copyBtn.className = 'btn-ghost';
+        copyBtn.textContent = 'Salin Link';
+        copyBtn.addEventListener('click', async () => {
+          await navigator.clipboard.writeText(shareUrl);
+          copyBtn.textContent = 'Tersalin!';
+          setTimeout(() => { copyBtn.textContent = 'Salin Link'; }, 1500);
+        });
+        tdShare.appendChild(copyBtn);
+
+        const tdLynk = document.createElement('td');
+        const lynkA = document.createElement('a');
+        lynkA.href = aff.lynkUrl;
+        lynkA.target = '_blank';
+        lynkA.rel = 'noopener noreferrer';
+        lynkA.className = 'truncate';
+        lynkA.textContent = aff.lynkUrl;
+        tdLynk.appendChild(lynkA);
+
+        const tdClicks = document.createElement('td');
+        tdClicks.textContent = String(aff.clicks);
+
+        const tdCheckout = document.createElement('td');
+        tdCheckout.textContent = String(aff.checkoutClicks);
+
+        const tdStatus = document.createElement('td');
+        const pill = document.createElement('span');
+        pill.className = 'pill ' + (aff.active ? 'on' : 'off');
+        pill.textContent = aff.active ? 'Aktif' : 'Nonaktif';
+        tdStatus.appendChild(pill);
+
+        const tdActions = document.createElement('td');
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
+        toggleBtn.className = 'btn-ghost';
+        toggleBtn.textContent = aff.active ? 'Nonaktifkan' : 'Aktifkan';
+        toggleBtn.addEventListener('click', async () => {
+          try {
+            await api('PATCH', { code: aff.code, active: !aff.active });
+            await loadAffiliates();
+          } catch (e) {
+            setStatus(els.listStatus, e.message, true);
+          }
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'btn-danger';
+        delBtn.textContent = 'Hapus';
+        delBtn.addEventListener('click', async () => {
+          if (!confirm(`Hapus afiliator ${aff.name} (${aff.code})?`)) return;
+          try {
+            await api('DELETE', { code: aff.code });
+            await loadAffiliates();
+          } catch (e) {
+            setStatus(els.listStatus, e.message, true);
+          }
+        });
+
+        actions.append(toggleBtn, delBtn);
+        tdActions.appendChild(actions);
+
+        tr.append(tdName, tdCode, tdShare, tdLynk, tdClicks, tdCheckout, tdStatus, tdActions);
+        els.affTbody.appendChild(tr);
+      }
+    }
+
+    async function loadAffiliates() {
+      setStatus(els.listStatus, '');
+      const data = await api('GET');
+      renderRows(data.affiliates || []);
+    }
+
+    async function unlock() {
+      try {
+        await loadAffiliates();
+        els.authCard.hidden = true;
+        els.dashboard.hidden = false;
+        els.logoutBtn.hidden = false;
+        setStatus(els.authStatus, '');
+      } catch (e) {
+        sessionStorage.removeItem(SECRET_KEY);
+        els.authCard.hidden = false;
+        els.dashboard.hidden = true;
+        els.logoutBtn.hidden = true;
+        setStatus(els.authStatus, e.message, true);
+      }
+    }
+
+    els.authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      sessionStorage.setItem(SECRET_KEY, els.adminSecret.value.trim());
+      await unlock();
+    });
+
+    els.logoutBtn.addEventListener('click', () => {
+      sessionStorage.removeItem(SECRET_KEY);
+      els.adminSecret.value = '';
+      els.authCard.hidden = false;
+      els.dashboard.hidden = true;
+      els.logoutBtn.hidden = true;
+    });
+
+    els.createForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setStatus(els.createStatus, '');
+      try {
+        const res = await api('POST', {
+          name: els.affName.value.trim(),
+          lynkUrl: els.affLynk.value.trim(),
+          code: els.affCode.value.trim(),
+        });
+        els.createForm.reset();
+        const link = `${window.location.origin}/?ref=${encodeURIComponent(res.affiliate.code)}`;
+        setStatus(els.createStatus, `Berhasil! Link share: ${link}`);
+        await loadAffiliates();
+      } catch (e) {
+        setStatus(els.createStatus, e.message, true);
+      }
+    });
+
+    if (getSecret()) {
+      unlock();
+    }
+  </script>
+</body>
+</html>

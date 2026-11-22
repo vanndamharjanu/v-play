@@ -19,6 +19,8 @@ import { createGamesController } from './games.js';
 
 const LICENSE_STORAGE_KEY = 'funplay_license_v1';
 const DEVICE_STORAGE_KEY = 'funplay_device_v1';
+const AFFILIATE_STORAGE_KEY = 'funplay_affiliate_v1';
+const AFFILIATE_TRACKED_KEY = 'funplay_affiliate_tracked_v1';
 
 const state = {
   mode: 'explore', // 'explore' | 'quiz' | 'puzzle' | 'memory' | 'counting' | 'odd'
@@ -897,14 +899,59 @@ async function initLicensing() {
     }
   }
 
+  const urlRefRaw = new URLSearchParams(window.location.search).get('ref') || '';
+  const urlRef = urlRefRaw.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 32);
+  if (urlRef) {
+    safeSetStorage(AFFILIATE_STORAGE_KEY, urlRef);
+  }
+  const activeRef = urlRef || safeGetStorage(AFFILIATE_STORAGE_KEY) || '';
+  let trackedRef = '';
   try {
-    const cfgRes = await fetch('/api/config');
+    trackedRef = sessionStorage.getItem(AFFILIATE_TRACKED_KEY) || '';
+  } catch {
+    trackedRef = '';
+  }
+  const shouldTrack = Boolean(activeRef && trackedRef !== activeRef);
+
+  try {
+    const cfgParams = new URLSearchParams();
+    if (activeRef) cfgParams.set('ref', activeRef);
+    if (shouldTrack) cfgParams.set('track', '1');
+    const cfgUrl = cfgParams.toString() ? `/api/config?${cfgParams.toString()}` : '/api/config';
+
+    const cfgRes = await fetch(cfgUrl);
     if (cfgRes.ok) {
       const cfg = await cfgRes.json();
+      if (cfg.affiliateCode && shouldTrack) {
+        try {
+          sessionStorage.setItem(AFFILIATE_TRACKED_KEY, cfg.affiliateCode);
+        } catch {
+          // Ignore sessionStorage restrictions.
+        }
+      }
       if (cfg.lynkUrl) {
         els.licenseBuyLink.href = cfg.lynkUrl;
         els.licenseBuyLink.hidden = false;
         els.licenseBuyHint.hidden = true;
+        if (cfg.affiliateCode && !els.licenseBuyLink.dataset.affBound) {
+          els.licenseBuyLink.dataset.affBound = '1';
+          els.licenseBuyLink.addEventListener('click', () => {
+            const payload = JSON.stringify({ code: cfg.affiliateCode });
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon(
+                '/api/affiliate/click',
+                new Blob([payload], { type: 'application/json' })
+              );
+            } else {
+              fetch('/api/affiliate/click', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: payload,
+                keepalive: true,
+              }).catch(() => {});
+            }
+          });
+        }
       }
     }
   } catch {
