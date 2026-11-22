@@ -14,7 +14,7 @@ Cocok untuk partner promosi yang mengarahkan calon pembeli ke web FunPlay terleb
 3. Dapatkan **Link Affiliate Lynk.id** khusus milik afiliator tersebut.
 
 ### Langkah Tambah Afiliator di FunPlay
-1. Buka `https://funplay.web.id/admin.html` lalu login menggunakan `ADMIN_SECRET`.
+1. Buka `https://funplay.web.id/dapur-funplay.html` lalu login menggunakan `ADMIN_SECRET`.
 2. Pastikan berada di tab **Affiliate**.
 3. Isi form **Tambah Afiliator Baru**:
    - **Nama Afiliator**: contoh `Mama Ani`.
@@ -24,7 +24,7 @@ Cocok untuk partner promosi yang mengarahkan calon pembeli ke web FunPlay terleb
 5. Klik **Salin Link** pada tabel, lalu kirim link tersebut (`https://funplay.web.id/?ref=KODE`) ke afiliator.
 
 ### Catatan Operasional Affiliate
-- **Kunjungan** & **Klik Beli** bisa dipantau di tabel `/admin.html`.
+- **Kunjungan** & **Klik Beli** bisa dipantau di tabel `/dapur-funplay.html`.
 - Penjualan sah & pencairan komisi tetap mengikuti sistem otomatis Lynk.id.
 - Jika afiliator berhenti, cukup klik **Nonaktifkan** atau **Hapus** di tabel; pengunjung yang masih membawa `?ref=` lama otomatis kembali diarahkan ke link checkout utama FunPlay.
 
@@ -45,7 +45,7 @@ Cocok untuk partner yang menyewa platform FunPlay secara bulanan/tahunan dengan 
 3. Dengan ini, email kode lisensi pembeli akan dikirim atas nama domain mereka sendiri (misal `BrandMereka <halo@brandmereka.id>`).
 
 ### Langkah 3 — Daftarkan Tenant di Admin FunPlay
-1. Buka `https://funplay.web.id/admin.html` → pilih tab **White-Label (Tenant)**.
+1. Buka `https://funplay.web.id/dapur-funplay.html` → pilih tab **White-Label (Tenant)**.
 2. Isi form **Tambah Partner White-Label**:
    - **Domain Partner**: `brandmereka.id` (tanpa `https://`).
    - **Nama Brand**: contoh `BelajarKids`.
@@ -63,5 +63,5 @@ Partner membuka `https://brandmereka.id/brand-setup.html` dan login memakai **To
 5. Klik **Simpan Perubahan Brand**.
 
 ### Kontrol Masa Langganan
-- Jika partner memperpanjang langganan: perbarui tanggal **Masa Aktif** atau klik **Aktifkan** di `/admin.html`.
+- Jika partner memperpanjang langganan: perbarui tanggal **Masa Aktif** atau klik **Aktifkan** di `/dapur-funplay.html`.
 - Jika masa aktif habis (`expires_at` terlewati) atau dinonaktifkan: domain partner otomatis berhenti melayani aplikasi & API dan menampilkan pemberitahuan masa aktif berakhir.
